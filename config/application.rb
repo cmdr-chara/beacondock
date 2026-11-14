@@ -38,5 +38,9 @@ module Beacondock
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # UI ships in English and Italian.
+    config.i18n.available_locales = %i[en it]
+    config.i18n.default_locale = :en
   end
 end

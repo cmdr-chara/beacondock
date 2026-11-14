@@ -1,0 +1,61 @@
+<% content_for :title, t(".title") %>
+
+<div class="status-page">
+  <% if @monitors.empty? %>
+    <div class="status-banner status-empty">
+      <h1><%= t(".empty") %></h1>
+    </div>
+  <% else %>
+    <% overall = if @monitors.any?(&:last_status_down?)
+                   :down
+                 elsif @monitors.any?(&:last_status_degraded?)
+                   :degraded
+                 elsif @monitors.all?(&:last_status_pending?)
+                   :pending
+                 else
+                   :up
+                 end %>
+    <div class="status-banner status-banner-<%= overall %>">
+      <h1><%= t(".banner.#{overall}") %></h1>
+      <p class="muted"><%= t(".updated", time: l(Time.current, format: :short)) %></p>
+    </div>
+
+    <div class="status-list">
+      <% @monitors.each do |monitor| %>
+        <div class="status-row status-<%= monitor.last_status %>">
+          <div class="status-row-name">
+            <strong><%= monitor.name %></strong>
+            <span class="muted"><%= monitor.host %></span>
+          </div>
+          <div class="status-row-uptimes">
+            <span><%= t("monitors.uptime_24h") %>: <strong><%= format_uptime(monitor, 24.hours) %></strong></span>
+            <span><%= t("monitors.uptime_30d") %>: <strong><%= format_uptime(monitor, 30.days) %></strong></span>
+          </div>
+          <%= status_badge(monitor.last_status) %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @recent_incidents.any? %>
+      <section class="panel">
+        <h2><%= t(".recent_incidents") %></h2>
+        <ul class="incident-list">
+          <% @recent_incidents.each do |incident| %>
+            <li>
+              <strong><%= incident.monitor.name %></strong> —
+              <%= incident.cause || t("incidents.unknown_cause") %>
+              <span class="muted">
+                <%= l(incident.started_at, format: :short) %>
+                <% if incident.resolved_at %>
+                  → <%= l(incident.resolved_at, format: :short) %>
+                <% else %>
+                  · <span class="badge badge-down"><%= t("incidents.ongoing") %></span>
+                <% end %>
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+  <% end %>
+</div>

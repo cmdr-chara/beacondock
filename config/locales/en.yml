@@ -1,31 +1,186 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
-  hello: "Hello world"
+  app:
+    name: "BeaconDock"
+    tagline: "Self-hosted uptime monitoring — the Rails sibling of PulseDock."
+
+  nav:
+    dashboard: "Dashboard"
+    api_keys: "API keys"
+    status_page: "Status page"
+    sign_in: "Sign in"
+    sign_up: "Sign up"
+    sign_out: "Sign out"
+
+  statuses:
+    up: "Operational"
+    down: "Down"
+    degraded: "Degraded"
+    pending: "Pending"
+
+  common:
+    edit: "Edit"
+    delete: "Delete"
+    cancel: "Cancel"
+    "yes": "Yes"
+    "no": "No"
+    never: "never"
+    not_available: "—"
+    no_data: "No data yet"
+    confirm_delete: "Are you sure? This cannot be undone."
+    latency_ms: "%{value} ms"
+
+  dashboard:
+    index:
+      title: "Dashboard"
+      new_monitor: "New monitor"
+      empty_title: "No monitors yet"
+      empty_body: "Add your first HTTP endpoint and BeaconDock will start checking it within seconds."
+
+  monitors:
+    uptime_24h: "Uptime 24h"
+    uptime_30d: "Uptime 30d"
+    latency: "Latency"
+    last_checked: "Last checked"
+    checked_ago: "Checked %{time} ago"
+    every: "every %{seconds}s"
+    consecutive_failures: "Consecutive failures"
+    expected_status: "Expected HTTP status"
+    on_status_page: "On public status page"
+    latency_sparkline: "Recent latency"
+    form:
+      errors_title:
+        one: "1 error prevented this monitor from being saved"
+        other: "%{count} errors prevented this monitor from being saved"
+      url_hint: "Full http(s) URL. URLs may contain tokens — they are never shown on the public status page."
+      warn_latency_hint: "Responses slower than this are marked degraded."
+      public_hint: "Show this monitor (name + host only) on your public status page."
+      interval_option: "%{seconds} s"
+    new:
+      title: "New monitor"
+    edit:
+      title: "Edit monitor"
+    create:
+      notice: "Monitor created. First check is scheduled."
+    update:
+      notice: "Monitor updated."
+    destroy:
+      notice: "Monitor deleted."
+    show:
+      overview: "Overview"
+      recent_checks: "Recent checks"
+      no_checks: "No checks recorded yet — the first run is scheduled."
+      incidents: "Incidents"
+      no_incidents: "No incidents recorded. 🎉"
+
+  checks:
+    status: "Status"
+    http_status: "HTTP"
+    latency: "Latency"
+    error: "Error"
+    checked_at: "Checked at"
+
+  incidents:
+    started_at: "Started"
+    resolved_at: "Resolved"
+    duration: "Duration"
+    cause: "Cause"
+    ongoing: "Ongoing"
+    unknown_cause: "Unknown cause"
+
+  sessions:
+    new:
+      title: "Sign in"
+      submit: "Sign in"
+      forgot_password: "Forgot password?"
+      need_account: "Need an account? Sign up"
+    create:
+      alert: "Try another email address or password."
+      rate_limited: "Try again later."
+
+  registrations:
+    new:
+      title: "Create your account"
+      submit: "Sign up"
+      have_account: "Already have an account? Sign in"
+    create:
+      notice: "Welcome to BeaconDock!"
+      rate_limited: "Try again later."
+
+  passwords:
+    new:
+      title: "Forgot your password?"
+      submit: "Email reset instructions"
+    edit:
+      title: "Update your password"
+      submit: "Save"
+    create:
+      notice: "Password reset instructions sent (if user with that email address exists)."
+      rate_limited: "Try again later."
+    update:
+      notice: "Password has been reset."
+      alert: "Passwords did not match."
+      invalid_token: "Password reset link is invalid or has expired."
+
+  passwords_mailer:
+    reset:
+      subject: "Reset your password"
+
+  api_keys:
+    name: "Name"
+    token: "Token"
+    last_used: "Last used"
+    state: "State"
+    active: "Active"
+    revoked: "Revoked"
+    revoke: "Revoke"
+    confirm_revoke: "Revoke this API key? Clients using it will lose access."
+    index:
+      title: "API keys"
+      token_created: "API key created"
+      token_hint: "Copy this token now — it is stored only as a digest and will never be shown again."
+      new_key: "Create a new key"
+      name_placeholder: "Key name (e.g. terraform, cli)"
+      create: "Create key"
+      your_keys: "Your keys"
+      empty: "No API keys yet. Create one to use the REST API."
+    destroy:
+      notice: "API key revoked."
+
+  status_pages:
+    show:
+      title: "System status"
+      empty: "No public monitors configured yet."
+      updated: "Last updated %{time}"
+      banner:
+        up: "All systems operational"
+        down: "Some systems are experiencing issues"
+        degraded: "Some systems are degraded"
+        pending: "Checks are starting up"
+      recent_incidents: "Recent incidents (last 14 days)"
+
+  activerecord:
+    models:
+      monitor: "monitor"
+      api_key: "API key"
+      user: "user"
+    attributes:
+      user:
+        email_address: "Email address"
+        password: "Password"
+        password_confirmation: "Password confirmation"
+      monitor:
+        name: "Name"
+        url: "URL"
+        http_method: "HTTP method"
+        interval_seconds: "Check interval"
+        timeout_seconds: "Timeout (s)"
+        expected_status: "Expected HTTP status"
+        warn_latency_ms: "Degraded above (ms)"
+        active: "Active"
+        public_on_status_page: "Public on status page"
+      api_key:
+        name: "Name"
+
+  errors:
+    messages:
+      invalid_url: "must be a valid http(s) URL"

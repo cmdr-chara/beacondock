@@ -1,29 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="<%= I18n.locale %>">
   <head>
-    <title><%= content_for(:title) || "Beacondock" %></title>
+    <title><%= content_for(:title) || t("app.name") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Beacondock">
+    <meta name="application-name" content="<%= t("app.name") %>">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <header class="site-header">
+      <nav class="nav container">
+        <%= link_to t("app.name"), root_path, class: "brand" %>
+
+        <div class="nav-links">
+          <% if authenticated? %>
+            <%= link_to t("nav.dashboard"), root_path %>
+            <%= link_to t("nav.api_keys"), api_keys_path %>
+            <%= link_to t("nav.status_page"), status_page_path(token: Current.user.status_page_token), target: "_blank", rel: "noopener" %>
+            <span class="nav-user"><%= Current.user.email_address %></span>
+            <%= button_to t("nav.sign_out"), session_path, method: :delete, class: "btn btn-ghost btn-sm" %>
+          <% else %>
+            <%= link_to t("nav.sign_in"), new_session_path %>
+            <%= link_to t("nav.sign_up"), sign_up_path, class: "btn btn-primary btn-sm" %>
+          <% end %>
+          <span class="locale-switch">
+            <%= link_to "EN", url_for(locale: :en), class: (I18n.locale == :en ? "active" : nil) %>
+            <%= link_to "IT", url_for(locale: :it), class: (I18n.locale == :it ? "active" : nil) %>
+          </span>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container">
+      <% if flash[:notice].present? %>
+        <div class="flash flash-notice" role="status"><%= flash[:notice] %></div>
+      <% end %>
+      <% if flash[:alert].present? %>
+        <div class="flash flash-alert" role="alert"><%= flash[:alert] %></div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+
+    <footer class="site-footer container">
+      <span><%= t("app.tagline") %></span>
+    </footer>
   </body>
 </html>

@@ -1,0 +1,87 @@
+<% content_for :title, @monitor.name %>
+
+<div class="page-header">
+  <div>
+    <h1><%= @monitor.name %> <%= status_badge(@monitor.last_status) %></h1>
+    <p class="muted"><%= @monitor.host %> · <%= @monitor.http_method %> · <%= t("monitors.every", seconds: @monitor.interval_seconds) %></p>
+  </div>
+  <div class="actions">
+    <%= link_to t("common.edit"), edit_monitor_path(@monitor), class: "btn btn-ghost" %>
+    <%= button_to t("common.delete"), @monitor, method: :delete, class: "btn btn-danger",
+      form: { data: { turbo_confirm: t("common.confirm_delete") } } %>
+  </div>
+</div>
+
+<div class="panel-grid">
+  <section class="panel">
+    <h2><%= t(".overview") %></h2>
+    <dl class="detail-list">
+      <dt><%= t("monitors.uptime_24h") %></dt><dd><%= format_uptime(@monitor, 24.hours) %></dd>
+      <dt><%= t("monitors.uptime_30d") %></dt><dd><%= format_uptime(@monitor, 30.days) %></dd>
+      <dt><%= t("monitors.last_checked") %></dt><dd><%= format_check_time(@monitor.last_checked_at) %></dd>
+      <dt><%= t("monitors.consecutive_failures") %></dt><dd><%= @monitor.consecutive_failures %></dd>
+      <dt><%= t("monitors.expected_status") %></dt><dd><%= @monitor.expected_status %></dd>
+      <dt><%= t("monitors.on_status_page") %></dt>
+      <dd><%= @monitor.public_on_status_page? ? t("common.yes") : t("common.no") %></dd>
+    </dl>
+    <div class="big-sparkline"><%= latency_sparkline(@monitor, width: 560, height: 80) %></div>
+  </section>
+</div>
+
+<section class="panel">
+  <h2><%= t(".recent_checks") %></h2>
+  <% if @checks.any? %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th><%= t("checks.status") %></th>
+          <th><%= t("checks.http_status") %></th>
+          <th><%= t("checks.latency") %></th>
+          <th><%= t("checks.error") %></th>
+          <th><%= t("checks.checked_at") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @checks.each do |check| %>
+          <tr>
+            <td><%= status_badge(check.status) %></td>
+            <td><%= check.http_status || t("common.not_available") %></td>
+            <td><%= format_latency(check.latency_ms) %></td>
+            <td class="muted"><%= check.error || "—" %></td>
+            <td><%= l(check.checked_at, format: :short) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="muted"><%= t(".no_checks") %></p>
+  <% end %>
+</section>
+
+<section class="panel">
+  <h2><%= t(".incidents") %></h2>
+  <% if @incidents.any? %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th><%= t("incidents.started_at") %></th>
+          <th><%= t("incidents.resolved_at") %></th>
+          <th><%= t("incidents.duration") %></th>
+          <th><%= t("incidents.cause") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @incidents.each do |incident| %>
+          <tr>
+            <td><%= l(incident.started_at, format: :short) %></td>
+            <td><%= incident.resolved_at ? l(incident.resolved_at, format: :short) : t("incidents.ongoing") %></td>
+            <td><%= distance_of_time_in_words(incident.duration) %></td>
+            <td class="muted"><%= incident.cause || "—" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="muted"><%= t(".no_incidents") %></p>
+  <% end %>
+</section>

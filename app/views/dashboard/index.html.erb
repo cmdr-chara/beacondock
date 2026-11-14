@@ -1,0 +1,22 @@
+<% content_for :title, t(".title") %>
+
+<%= turbo_stream_from Current.user, :monitors %>
+
+<div class="page-header">
+  <h1><%= t(".title") %></h1>
+  <%= link_to t(".new_monitor"), new_monitor_path, class: "btn btn-primary" %>
+</div>
+
+<% if @monitors.any? %>
+  <div id="monitors" class="monitor-grid">
+    <%= render @monitors %>
+  </div>
+<% else %>
+  <div id="monitors" class="monitor-grid">
+    <div class="empty-state">
+      <h2><%= t(".empty_title") %></h2>
+      <p><%= t(".empty_body") %></p>
+      <%= link_to t(".new_monitor"), new_monitor_path, class: "btn btn-primary" %>
+    </div>
+  </div>
+<% end %>

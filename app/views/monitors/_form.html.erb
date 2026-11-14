@@ -1,0 +1,67 @@
+<%= form_with model: monitor, class: "form" do |form| %>
+  <% if monitor.errors.any? %>
+    <div class="form-errors" role="alert">
+      <h2><%= t("monitors.form.errors_title", count: monitor.errors.count) %></h2>
+      <ul>
+        <% monitor.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name, required: true, maxlength: 80 %>
+  </div>
+
+  <div class="field">
+    <%= form.label :url %>
+    <%= form.url_field :url, required: true, placeholder: "https://example.com/health" %>
+    <small class="hint"><%= t("monitors.form.url_hint") %></small>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <%= form.label :http_method %>
+      <%= form.select :http_method, SiteMonitor::HTTP_METHODS %>
+    </div>
+    <div class="field">
+      <%= form.label :interval_seconds %>
+      <%= form.select :interval_seconds,
+        options_for_select(SiteMonitor::INTERVAL_SECONDS.map { |s| [ t("monitors.form.interval_option", seconds: s), s ] }, monitor.interval_seconds) %>
+    </div>
+    <div class="field">
+      <%= form.label :timeout_seconds %>
+      <%= form.number_field :timeout_seconds, min: 1, max: 30 %>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <%= form.label :expected_status %>
+      <%= form.number_field :expected_status, min: 100, max: 599 %>
+    </div>
+    <div class="field">
+      <%= form.label :warn_latency_ms %>
+      <%= form.number_field :warn_latency_ms, min: 100, max: 60_000, step: 50 %>
+      <small class="hint"><%= t("monitors.form.warn_latency_hint") %></small>
+    </div>
+  </div>
+
+  <div class="field field-inline">
+    <%= form.check_box :active %>
+    <%= form.label :active %>
+  </div>
+
+  <div class="field field-inline">
+    <%= form.check_box :public_on_status_page %>
+    <%= form.label :public_on_status_page %>
+    <small class="hint"><%= t("monitors.form.public_hint") %></small>
+  </div>
+
+  <div class="form-actions">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to t("common.cancel"), monitor.persisted? ? monitor_path(monitor) : root_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>
