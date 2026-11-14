@@ -1,11 +1,17 @@
 <% content_for :title, @monitor.name %>
 
+<%= link_to root_path, class: "back-link" do %>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  <%= t("nav.dashboard") %>
+<% end %>
+
 <div class="page-header">
   <div>
     <h1><%= @monitor.name %> <%= status_badge(@monitor.last_status) %></h1>
-    <p class="muted"><%= @monitor.host %> · <%= @monitor.http_method %> · <%= t("monitors.every", seconds: @monitor.interval_seconds) %></p>
+    <p class="page-sub"><%= @monitor.host %> · <%= @monitor.http_method %> · <%= t("monitors.every", seconds: @monitor.interval_seconds) %></p>
   </div>
   <div class="actions">
+    <%= button_to t("monitors.check_now"), check_monitor_path(@monitor), method: :post, class: "btn btn-ghost" %>
     <%= link_to t("common.edit"), edit_monitor_path(@monitor), class: "btn btn-ghost" %>
     <%= button_to t("common.delete"), @monitor, method: :delete, class: "btn btn-danger",
       form: { data: { turbo_confirm: t("common.confirm_delete") } } %>
@@ -31,28 +37,30 @@
 <section class="panel">
   <h2><%= t(".recent_checks") %></h2>
   <% if @checks.any? %>
-    <table class="table">
-      <thead>
-        <tr>
-          <th><%= t("checks.status") %></th>
-          <th><%= t("checks.http_status") %></th>
-          <th><%= t("checks.latency") %></th>
-          <th><%= t("checks.error") %></th>
-          <th><%= t("checks.checked_at") %></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @checks.each do |check| %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
           <tr>
-            <td><%= status_badge(check.status) %></td>
-            <td><%= check.http_status || t("common.not_available") %></td>
-            <td><%= format_latency(check.latency_ms) %></td>
-            <td class="muted"><%= check.error || "—" %></td>
-            <td><%= l(check.checked_at, format: :short) %></td>
+            <th><%= t("checks.status") %></th>
+            <th><%= t("checks.http_status") %></th>
+            <th><%= t("checks.latency") %></th>
+            <th><%= t("checks.error") %></th>
+            <th><%= t("checks.checked_at") %></th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% @checks.each do |check| %>
+            <tr>
+              <td><%= status_badge(check.status) %></td>
+              <td class="num"><%= check.http_status || t("common.not_available") %></td>
+              <td class="num"><%= format_latency(check.latency_ms) %></td>
+              <td class="muted"><%= check.error || "—" %></td>
+              <td class="muted"><%= l(check.checked_at, format: :short) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   <% else %>
     <p class="muted"><%= t(".no_checks") %></p>
   <% end %>
@@ -61,26 +69,28 @@
 <section class="panel">
   <h2><%= t(".incidents") %></h2>
   <% if @incidents.any? %>
-    <table class="table">
-      <thead>
-        <tr>
-          <th><%= t("incidents.started_at") %></th>
-          <th><%= t("incidents.resolved_at") %></th>
-          <th><%= t("incidents.duration") %></th>
-          <th><%= t("incidents.cause") %></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @incidents.each do |incident| %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
           <tr>
-            <td><%= l(incident.started_at, format: :short) %></td>
-            <td><%= incident.resolved_at ? l(incident.resolved_at, format: :short) : t("incidents.ongoing") %></td>
-            <td><%= distance_of_time_in_words(incident.duration) %></td>
-            <td class="muted"><%= incident.cause || "—" %></td>
+            <th><%= t("incidents.started_at") %></th>
+            <th><%= t("incidents.resolved_at") %></th>
+            <th><%= t("incidents.duration") %></th>
+            <th><%= t("incidents.cause") %></th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% @incidents.each do |incident| %>
+            <tr>
+              <td><%= l(incident.started_at, format: :short) %></td>
+              <td><%= incident.resolved_at ? l(incident.resolved_at, format: :short) : t("incidents.ongoing") %></td>
+              <td class="num"><%= distance_of_time_in_words(incident.duration) %></td>
+              <td class="muted"><%= incident.cause || "—" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   <% else %>
     <p class="muted"><%= t(".no_incidents") %></p>
   <% end %>

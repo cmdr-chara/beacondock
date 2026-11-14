@@ -1,6 +1,6 @@
 <%= tag.article id: dom_id(monitor), class: "monitor-card status-#{monitor.last_status}" do %>
   <header class="monitor-card-header">
-    <div>
+    <div class="monitor-card-heading">
       <h2 class="monitor-name"><%= link_to monitor.name, monitor %></h2>
       <span class="monitor-host"><%= monitor.host %></span>
     </div>
@@ -18,7 +18,7 @@
     </div>
     <div class="stat">
       <span class="stat-label"><%= t("monitors.latency") %></span>
-      <span class="stat-value"><%= format_latency(monitor.checks.first&.latency_ms) %></span>
+      <span class="stat-value mono"><%= format_latency(monitor.checks.first&.latency_ms) %></span>
     </div>
   </div>
 

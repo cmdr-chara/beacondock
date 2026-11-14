@@ -1,5 +1,5 @@
 class MonitorsController < ApplicationController
-  before_action :set_monitor, only: %i[show edit update destroy]
+  before_action :set_monitor, only: %i[show edit update destroy check]
 
   def show
     @checks = @monitor.checks.limit(50)
@@ -34,6 +34,15 @@ class MonitorsController < ApplicationController
   def destroy
     @monitor.destroy!
     redirect_to root_path, notice: t(".notice"), status: :see_other
+  end
+
+  def check
+    if @monitor.active?
+      CheckMonitorJob.perform_later(@monitor.id)
+      redirect_to @monitor, notice: t(".notice"), status: :see_other
+    else
+      redirect_to @monitor, alert: t(".inactive"), status: :see_other
+    end
   end
 
   private

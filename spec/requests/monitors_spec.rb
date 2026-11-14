@@ -72,6 +72,27 @@ RSpec.describe "Monitors", type: :request do
     end
   end
 
+  describe "POST /monitors/:id/check" do
+    it "enqueues a check for an active monitor" do
+      expect { post check_monitor_path(monitor) }
+        .to have_enqueued_job(CheckMonitorJob).with(monitor.id)
+      expect(response).to redirect_to(monitor_path(monitor))
+    end
+
+    it "does not enqueue a check for a paused monitor" do
+      monitor.update!(active: false)
+      expect { post check_monitor_path(monitor) }
+        .not_to have_enqueued_job(CheckMonitorJob)
+      expect(response).to redirect_to(monitor_path(monitor))
+    end
+
+    it "cannot check another user's monitor" do
+      other = create(:monitor, user: create(:user))
+      post check_monitor_path(other)
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   it "requires authentication" do
     delete session_path
     get new_monitor_path

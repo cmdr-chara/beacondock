@@ -6,7 +6,12 @@
   <div class="panel token-reveal">
     <h2><%= t(".token_created") %></h2>
     <p class="muted"><%= t(".token_hint") %></p>
-    <code class="token-value"><%= @api_key.raw_token %></code>
+    <div class="token-box" data-controller="clipboard" data-clipboard-copied-value="<%= t("common.copied") %>">
+      <code class="token-value" data-clipboard-target="source"><%= @api_key.raw_token %></code>
+      <button type="button" class="btn btn-ghost" data-clipboard-target="button" data-action="clipboard#copy">
+        <%= t("common.copy") %>
+      </button>
+    </div>
   </div>
 <% end %>
 
@@ -14,11 +19,14 @@
   <h2><%= t(".new_key") %></h2>
   <% if @api_key.errors.any? %>
     <div class="form-errors" role="alert">
-      <ul>
-        <% @api_key.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <div>
+        <ul>
+          <% @api_key.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
     </div>
   <% end %>
   <%= form_with model: @api_key, class: "form form-inline" do |form| %>
@@ -30,33 +38,41 @@
 <div class="panel">
   <h2><%= t(".your_keys") %></h2>
   <% if @api_keys.select(&:persisted?).any? %>
-    <table class="table">
-      <thead>
-        <tr>
-          <th><%= t("api_keys.name") %></th>
-          <th><%= t("api_keys.token") %></th>
-          <th><%= t("api_keys.last_used") %></th>
-          <th><%= t("api_keys.state") %></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @api_keys.select(&:persisted?).each do |key| %>
-          <tr class="<%= "revoked" if key.revoked? %>">
-            <td><%= key.name %></td>
-            <td><code><%= key.masked_token %></code></td>
-            <td><%= key.last_used_at ? l(key.last_used_at, format: :short) : t("common.never") %></td>
-            <td><%= key.revoked? ? t("api_keys.revoked") : t("api_keys.active") %></td>
-            <td>
-              <% unless key.revoked? %>
-                <%= button_to t("api_keys.revoke"), key, method: :delete, class: "btn btn-danger btn-sm",
-                  form: { data: { turbo_confirm: t("api_keys.confirm_revoke") } } %>
-              <% end %>
-            </td>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th><%= t("api_keys.name") %></th>
+            <th><%= t("api_keys.token") %></th>
+            <th><%= t("api_keys.last_used") %></th>
+            <th><%= t("api_keys.state") %></th>
+            <th></th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% @api_keys.select(&:persisted?).each do |key| %>
+            <tr class="<%= "revoked" if key.revoked? %>">
+              <td><%= key.name %></td>
+              <td><code><%= key.masked_token %></code></td>
+              <td class="muted"><%= key.last_used_at ? l(key.last_used_at, format: :short) : t("common.never") %></td>
+              <td>
+                <% if key.revoked? %>
+                  <span class="state-pill is-revoked"><%= t("api_keys.revoked") %></span>
+                <% else %>
+                  <span class="state-pill is-active"><%= t("api_keys.active") %></span>
+                <% end %>
+              </td>
+              <td class="num">
+                <% unless key.revoked? %>
+                  <%= button_to t("api_keys.revoke"), key, method: :delete, class: "btn btn-danger btn-sm",
+                    form: { data: { turbo_confirm: t("api_keys.confirm_revoke") } } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   <% else %>
     <p class="muted"><%= t(".empty") %></p>
   <% end %>

@@ -33,3 +33,7 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+
+# Agent skill tooling (installed locally, not part of the app)
+/.agents/
+/.taste-skill/

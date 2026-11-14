@@ -2,6 +2,10 @@ it:
   app:
     name: "BeaconDock"
     tagline: "Monitoraggio uptime self-hosted — il fratello Rails di PulseDock."
+    description: "Monitoraggio uptime self-hosted per endpoint HTTP."
+
+  a11y:
+    skip_to_content: "Salta al contenuto"
 
   nav:
     dashboard: "Pannello"
@@ -10,6 +14,7 @@ it:
     sign_in: "Accedi"
     sign_up: "Registrati"
     sign_out: "Esci"
+    toggle: "Menu"
 
   statuses:
     up: "Operativo"
@@ -28,6 +33,8 @@ it:
     no_data: "Nessun dato"
     confirm_delete: "Sei sicuro? L'operazione non può essere annullata."
     latency_ms: "%{value} ms"
+    copy: "Copia"
+    copied: "Copiato"
 
   dashboard:
     index:
@@ -35,6 +42,9 @@ it:
       new_monitor: "Nuovo monitor"
       empty_title: "Nessun monitor"
       empty_body: "Aggiungi il tuo primo endpoint HTTP e BeaconDock inizierà a controllarlo in pochi secondi."
+      monitor_count:
+        one: "%{count} monitor"
+        other: "%{count} monitor"
 
   monitors:
     uptime_24h: "Uptime 24h"
@@ -55,6 +65,10 @@ it:
       warn_latency_hint: "Risposte più lente di questa soglia vengono marcate come degradate."
       public_hint: "Mostra questo monitor (solo nome + host) sulla pagina di stato pubblica."
       interval_option: "%{seconds} s"
+      groups:
+        endpoint: "Endpoint"
+        checks: "Controlli"
+        visibility: "Visibilità"
     new:
       title: "Nuovo monitor"
     edit:
@@ -65,6 +79,10 @@ it:
       notice: "Monitor aggiornato."
     destroy:
       notice: "Monitor eliminato."
+    check_now: "Controlla ora"
+    check:
+      notice: "Controllo accodato — il risultato arriva tra pochi secondi."
+      inactive: "Monitor in pausa — riprendilo per eseguire i controlli."
     show:
       overview: "Panoramica"
       recent_checks: "Controlli recenti"
@@ -150,7 +168,11 @@ it:
     show:
       title: "Stato dei sistemi"
       empty: "Nessun monitor pubblico configurato."
+      empty_hint: "I monitor appaiono qui quando il proprietario li pubblica."
       updated: "Ultimo aggiornamento %{time}"
+      monitors_label: "Servizi monitorati"
+      uptime_bars_label: "Uptime di %{name} negli ultimi 30 giorni"
+      powered_by: "Offerto da"
       banner:
         up: "Tutti i sistemi operativi"
         down: "Alcuni sistemi hanno problemi"

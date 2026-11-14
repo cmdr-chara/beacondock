@@ -1,22 +1,31 @@
 <% content_for :title, t(".title") %>
 
-<div class="auth-card">
-  <h1><%= t(".title") %></h1>
-
-  <%= form_with url: session_path, class: "form" do |form| %>
-    <div class="field">
-      <%= form.label :email_address, t("activerecord.attributes.user.email_address") %>
-      <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", value: params[:email_address] %>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <%= brand_mark %>
+      <span><%= t("app.name") %></span>
     </div>
-    <div class="field">
-      <%= form.label :password, t("activerecord.attributes.user.password") %>
-      <%= form.password_field :password, required: true, autocomplete: "current-password", maxlength: 72 %>
-    </div>
-    <%= form.submit t(".submit"), class: "btn btn-primary btn-block" %>
-  <% end %>
 
-  <p class="auth-links">
-    <%= link_to t(".forgot_password"), new_password_path %> ·
-    <%= link_to t(".need_account"), sign_up_path %>
-  </p>
+    <h1><%= t(".title") %></h1>
+
+    <%= form_with url: session_path, class: "form" do |form| %>
+      <div class="field">
+        <%= form.label :email_address, t("activerecord.attributes.user.email_address") %>
+        <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", value: params[:email_address] %>
+      </div>
+      <div class="field">
+        <%= form.label :password, t("activerecord.attributes.user.password") %>
+        <%= form.password_field :password, required: true, autocomplete: "current-password", maxlength: 72 %>
+      </div>
+      <%= form.submit t(".submit"), class: "btn btn-primary btn-block" %>
+    <% end %>
+
+    <p class="auth-links">
+      <%= link_to t(".forgot_password"), new_password_path %> ·
+      <%= link_to t(".need_account"), sign_up_path %>
+    </p>
+
+    <p class="auth-tagline"><%= t("app.description") %></p>
+  </div>
 </div>

@@ -5,7 +5,9 @@ Rails.application.routes.draw do
   get "sign_up" => "registrations#new", as: :sign_up
   post "sign_up" => "registrations#create"
 
-  resources :monitors, except: :index
+  resources :monitors, except: :index do
+    member { post :check }
+  end
   resources :api_keys, only: %i[index create destroy]
 
   # Public status page — one unguessable token per user, no auth required.

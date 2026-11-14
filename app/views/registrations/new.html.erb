@@ -1,33 +1,45 @@
 <% content_for :title, t(".title") %>
 
-<div class="auth-card">
-  <h1><%= t(".title") %></h1>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <%= brand_mark %>
+      <span><%= t("app.name") %></span>
+    </div>
 
-  <% if @user.errors.any? %>
-    <div class="form-errors" role="alert">
-      <ul>
-        <% @user.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+    <h1><%= t(".title") %></h1>
 
-  <%= form_with model: @user, url: sign_up_path, class: "form" do |form| %>
-    <div class="field">
-      <%= form.label :email_address %>
-      <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username" %>
-    </div>
-    <div class="field">
-      <%= form.label :password %>
-      <%= form.password_field :password, required: true, autocomplete: "new-password", maxlength: 72 %>
-    </div>
-    <div class="field">
-      <%= form.label :password_confirmation %>
-      <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72 %>
-    </div>
-    <%= form.submit t(".submit"), class: "btn btn-primary btn-block" %>
-  <% end %>
+    <% if @user.errors.any? %>
+      <div class="form-errors" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <div>
+          <ul>
+            <% @user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    <% end %>
 
-  <p class="auth-links"><%= link_to t(".have_account"), new_session_path %></p>
+    <%= form_with model: @user, url: sign_up_path, class: "form" do |form| %>
+      <div class="field">
+        <%= form.label :email_address %>
+        <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username" %>
+      </div>
+      <div class="field">
+        <%= form.label :password %>
+        <%= form.password_field :password, required: true, autocomplete: "new-password", maxlength: 72 %>
+      </div>
+      <div class="field">
+        <%= form.label :password_confirmation %>
+        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72 %>
+      </div>
+      <%= form.submit t(".submit"), class: "btn btn-primary btn-block" %>
+    <% end %>
+
+    <p class="auth-links"><%= link_to t(".have_account"), new_session_path %></p>
+
+    <p class="auth-tagline"><%= t("app.description") %></p>
+  </div>
 </div>
