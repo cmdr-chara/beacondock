@@ -1,3 +1,7 @@
+require "net/http"
+require "openssl"
+require "timeout"
+
 # Performs a single HTTP probe for a Monitor.
 #
 # Contract (mirrors PulseDock semantics):
