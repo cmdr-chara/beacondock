@@ -80,6 +80,14 @@ RSpec.describe "API v1 monitors", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
       expect(json.dig("error", "code")).to eq("validation_failed")
     end
+
+    it "returns 400 when the monitor key is missing" do
+      post "/api/v1/monitors", params: {}.to_json,
+        headers: headers.merge("Content-Type" => "application/json")
+
+      expect(response).to have_http_status(:bad_request)
+      expect(json.dig("error", "code")).to eq("bad_request")
+    end
   end
 
   describe "PATCH /api/v1/monitors/:id" do

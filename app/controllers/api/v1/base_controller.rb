@@ -9,6 +9,7 @@ module Api
       before_action :authenticate_api_key!
 
       rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
+      rescue_from ActionController::ParameterMissing, with: :render_bad_request
 
       private
         attr_reader :current_api_key
@@ -32,6 +33,10 @@ module Api
 
         def render_not_found
           render_error("not_found", "Resource not found", :not_found)
+        end
+
+        def render_bad_request(exception)
+          render_error("bad_request", exception.message, :bad_request)
         end
     end
   end
