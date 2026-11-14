@@ -3,4 +3,9 @@
 require_relative "../config/environment"
 require "solid_queue/cli"
 
+# Solid Queue's default supervisor forks worker processes, and fork(2) does
+# not exist on Windows. The async supervisor runs workers/dispatchers in
+# threads instead — identical queueing semantics for development.
+ARGV.push("--mode=async") if Gem.win_platform? && ARGV.none? { |arg| arg.start_with?("--mode") }
+
 SolidQueue::Cli.start(ARGV)
