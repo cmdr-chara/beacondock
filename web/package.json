@@ -1,0 +1,39 @@
+{
+  "name": "beacondock-console",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "css": "tailwindcss -i src/app/globals.css -o public/assets/app.css --minify",
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "eslint .",
+    "mongo": "node scripts/dev-mongo.mjs",
+    "predev": "npm run css",
+    "prebuild": "npm run css"
+  },
+  "dependencies": {
+    "@fontsource/host-grotesk": "^5.2.5",
+    "@fontsource/jetbrains-mono": "^5.2.5",
+    "mongodb": "^6.10.0",
+    "next": "^16.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.5",
+    "@tailwindcss/postcss": "^4.1.14",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.38.0",
+    "eslint-config-next": "^16.0.1",
+    "mongodb-memory-server": "^11.3.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.14",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

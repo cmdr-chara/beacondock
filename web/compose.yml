@@ -1,0 +1,14 @@
+# Optional web-layer store for the console (preferences + alert rules).
+# Monitors, checks and incidents stay in the Rails app's SQLite — this MongoDB
+# is only for the Next.js console. `docker compose up -d` in this directory.
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - console-mongo:/data/db
+
+volumes:
+  console-mongo:
