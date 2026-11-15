@@ -55,9 +55,16 @@ module Tui
 
     def print_frame
       @tick += 1
-      hide_cursor if @io.tty?
-      @io.print "\e[H\e[J" if @io.tty?
-      @io.print frame
+      @content_width = nil # re-read terminal size once per frame
+      text = frame
+      if @io.tty? && @prev_lines
+        draw_diff(text)
+      else
+        hide_cursor if @io.tty?
+        @io.print "\e[H\e[J" if @io.tty?
+        @io.print text
+      end
+      @prev_lines = text.split("\n", -1)
       @io.flush
     end
 
@@ -194,7 +201,11 @@ module Tui
         "in #{format_duration(seconds)}"
       end
 
-      def content_width = [ [ terminal_width, 110 ].min, 56 ].max
+      # Memoized per frame — terminal size is a WinAPI call on Windows and
+      # this runs dozens of times while building one frame.
+      def content_width
+        @content_width ||= [ [ terminal_width, 110 ].min, 56 ].max
+      end
 
       # Fixed columns total ~61-70 chars; the uptime bar absorbs whatever is
       # left inside the box so it is always as long as it can be.
@@ -370,6 +381,19 @@ module Tui
       end
 
       # --- terminal plumbing ---------------------------------------------
+      # Repaint only the lines that changed — full-screen erase is what
+      # causes visible flicker on slow consoles (Windows Terminal/PS).
+      def draw_diff(text)
+        lines = text.split("\n", -1)
+        out = +""
+        lines.each_with_index do |line, i|
+          next if @prev_lines[i] == line
+          out << "\e[#{i + 1};1H" << line << "\e[K"
+        end
+        out << "\e[#{lines.size + 1};1H\e[J" if @prev_lines.size > lines.size
+        @io.print out
+      end
+
       def terminal_width = TTY::Screen.width
 
       def pad(text, width) = format("%-#{width}s", text)
