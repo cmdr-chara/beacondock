@@ -68,7 +68,7 @@ RSpec.describe "Monitors", type: :request do
       expect { delete monitor_path(monitor) }
         .to change(user.monitors, :count).by(-1)
         .and change(Check, :count).by(-1)
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
     end
   end
 

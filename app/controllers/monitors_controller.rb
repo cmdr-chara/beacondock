@@ -33,7 +33,7 @@ class MonitorsController < ApplicationController
 
   def destroy
     @monitor.destroy!
-    redirect_to root_path, notice: t(".notice"), status: :see_other
+    redirect_to dashboard_path, notice: t(".notice"), status: :see_other
   end
 
   def check

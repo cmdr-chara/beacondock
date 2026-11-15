@@ -80,6 +80,6 @@
 
   <div class="form-actions">
     <%= form.submit class: "btn btn-primary" %>
-    <%= link_to t("common.cancel"), monitor.persisted? ? monitor_path(monitor) : root_path, class: "btn btn-ghost" %>
+    <%= link_to t("common.cancel"), monitor.persisted? ? monitor_path(monitor) : dashboard_path, class: "btn btn-ghost" %>
   </div>
 <% end %>

@@ -12,7 +12,7 @@ RSpec.describe "Authentication", type: :request do
     it "signs in with valid credentials and redirects to dashboard" do
       post session_path, params: { email_address: user.email_address, password: "password123" }
 
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
       follow_redirect!
       expect(response.body).to include("Dashboard")
     end
@@ -29,7 +29,7 @@ RSpec.describe "Authentication", type: :request do
       delete session_path
       expect(response).to redirect_to(new_session_path)
 
-      get root_path
+      get dashboard_path
       expect(response).to redirect_to(new_session_path)
     end
   end
@@ -47,7 +47,7 @@ RSpec.describe "Authentication", type: :request do
         } }
       }.to change(User, :count).by(1)
 
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
       follow_redirect!
       expect(response.body).to include("Dashboard")
     end
@@ -62,13 +62,13 @@ RSpec.describe "Authentication", type: :request do
     it "redirects already-signed-in visitors away" do
       sign_in(create(:user))
       get sign_up_path
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
     end
   end
 
   describe "protected pages" do
     it "redirects unauthenticated visitors to sign-in" do
-      get root_path
+      get dashboard_path
       expect(response).to redirect_to(new_session_path)
     end
 

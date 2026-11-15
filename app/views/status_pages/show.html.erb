@@ -79,8 +79,8 @@
           <% @recent_incidents.each do |incident| %>
             <li>
               <span class="incident-main">
-                <strong><%= incident.monitor.name %></strong> —
-                <%= incident.cause || t("incidents.unknown_cause") %>
+                <strong><%= incident.monitor.name %></strong>
+                <span class="incident-cause">· <%= incident.cause || t("incidents.unknown_cause") %></span>
               </span>
               <span class="incident-meta">
                 <%= l(incident.started_at, format: :short) %>

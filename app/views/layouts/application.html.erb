@@ -10,6 +10,12 @@
     <meta name="page-type" content="software">
     <meta name="description" content="<%= t("app.description") %>">
     <meta name="theme-color" content="#0b1020">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="<%= t("app.name") %>">
+    <meta property="og:title" content="<%= content_for(:title) || t("app.name") %>">
+    <meta property="og:description" content="<%= t("app.description") %>">
+    <meta property="og:image" content="<%= request.base_url %>/icon.png">
+    <meta name="twitter:card" content="summary_large_image">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -38,7 +44,7 @@
 
     <header class="site-header">
       <nav class="nav container" data-controller="nav">
-        <%= link_to root_path, class: "brand" do %>
+        <%= link_to dashboard_path, class: "brand" do %>
           <%= brand_mark %>
           <span class="brand-name"><%= t("app.name") %></span>
         <% end %>
@@ -51,7 +57,7 @@
 
         <div class="nav-links" id="primary-nav" data-nav-target="menu">
           <% if authenticated? %>
-            <%= link_to t("nav.dashboard"), root_path, class: ("is-active" if current_page?(root_path)), "aria-current": ("page" if current_page?(root_path)) %>
+            <%= link_to t("nav.dashboard"), dashboard_path, class: ("is-active" if current_page?(dashboard_path)), "aria-current": ("page" if current_page?(dashboard_path)) %>
             <%= link_to t("nav.api_keys"), api_keys_path, class: ("is-active" if current_page?(api_keys_path)), "aria-current": ("page" if current_page?(api_keys_path)) %>
             <%= link_to t("nav.status_page"), status_page_path(token: Current.user.status_page_token), target: "_blank", rel: "noopener" %>
             <span class="nav-user"><%= Current.user.email_address %></span>

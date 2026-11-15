@@ -314,8 +314,9 @@ code {
   letter-spacing: 0.02em;
 }
 .locale-switch a.active {
-  background: var(--raised);
-  color: var(--ink) !important;
+  background: var(--accent-soft);
+  color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px var(--accent-line);
 }
 
 .nav-toggle {
@@ -378,10 +379,9 @@ code {
 }
 .site-footer .container {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-4);
-  flex-wrap: wrap;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* ---------------------------------------------------------------- flash */
@@ -447,6 +447,8 @@ code {
   transform: translateY(-1px);
 }
 .btn-primary:active { transform: translateY(0) scale(0.985); }
+/* the accent ring disappears on the accent fill: the focus ring goes to ink there */
+.btn-primary:focus-visible { outline-color: var(--ink); }
 
 .btn-ghost {
   background: transparent;
@@ -802,7 +804,11 @@ textarea {
 }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.7; }
 input:hover, select:hover, textarea:hover { border-color: var(--border-strong); }
-input:focus, select:focus, textarea:focus {
+/* pointer focus gets the soft glow; keyboard focus keeps the :focus-visible
+   ring from the base rules (outline:none here would hide it) */
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
@@ -955,7 +961,7 @@ select { appearance: none; padding-right: 36px;
   gap: var(--s-4);
   border-radius: var(--r-md);
   border: 1px solid var(--border);
-  padding: var(--s-5) var(--s-6);
+  padding: var(--s-6);
   margin-bottom: var(--s-6);
 }
 .status-hero-icon {
@@ -985,6 +991,7 @@ select { appearance: none; padding-right: 36px;
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
+  padding-block: var(--s-6);
   margin-bottom: var(--s-6);
 }
 
@@ -1077,6 +1084,7 @@ select { appearance: none; padding-right: 36px;
 }
 .incident-list li:last-child { border-bottom: none; }
 .incident-list .incident-main { min-width: 0; }
+.incident-list .incident-cause { color: var(--ink-soft); }
 .incident-list .incident-meta {
   flex: none;
   color: var(--muted);
@@ -1085,8 +1093,8 @@ select { appearance: none; padding-right: 36px;
 }
 
 .status-foot {
-  margin-top: var(--s-7);
-  padding-top: var(--s-5);
+  margin-top: var(--s-6);
+  padding: var(--s-6) 0;
   border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: var(--t-label);
@@ -1094,6 +1102,10 @@ select { appearance: none; padding-right: 36px;
 }
 .status-foot a { color: var(--muted); font-weight: 500; }
 .status-foot a:hover { color: var(--ink); }
+
+/* the incidents panel on the public status page gets the same inner air as the
+   hero and the monitor list, so every band edge holds the same gap */
+.status-page .panel { padding: var(--s-6); }
 
 /* ---------------------------------------------------------------- responsive */
 @media (max-width: 860px) {
@@ -1115,8 +1127,9 @@ select { appearance: none; padding-right: 36px;
   main.container { padding-block: var(--s-5) var(--s-7); }
   .panel { padding: var(--s-4); }
   .auth-card { padding: var(--s-5) var(--s-4); }
-  .status-hero { padding: var(--s-4); }
+  .status-hero { padding: var(--s-4) var(--s-4) var(--s-5); }
   .status-hero h1 { font-size: 20px; }
+  .status-page .panel { padding: var(--s-5); }
   .status-row { padding: var(--s-3) var(--s-4); }
   .monitor-stats { gap: var(--s-4); }
   .stat-value { font-size: 18px; }
@@ -1133,6 +1146,9 @@ select { appearance: none; padding-right: 36px;
   .incident-list .incident-meta { text-align: left; }
   .btn { min-height: 44px; }
   .btn-sm { min-height: 44px; }
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="url"], input[type="number"], input[type="search"],
+  input[type="date"], select, textarea { min-height: 44px; }
 }
 
 @media (max-width: 480px) {
@@ -1156,3 +1172,8 @@ select { appearance: none; padding-right: 36px;
     scroll-behavior: auto !important;
   }
 }
+
+/* the status page ends with its own "powered by" line, so the shell's deep
+   bottom padding would only push the footer rule away unevenly; kept last so
+   it wins over the responsive padding rules above */
+main:has(.status-page) { padding-bottom: var(--s-6); }

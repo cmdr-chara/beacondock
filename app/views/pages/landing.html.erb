@@ -1,0 +1,547 @@
+<% content_for :title, t("landing.meta.title") %>
+<% content_for :head do %>
+<meta name="description" content="<%= t("landing.meta.description") %>">
+<% end %>
+<!doctype html>
+<!-- BeaconDock landing — design-taste-frontend kit (software, navy brand system).
+     type: software · radius: sharp · buttons: arrow · moments: cursor-spotlight (hero), letters-assemble (statement) -->
+<html lang="<%= I18n.locale %>" data-type="software" data-radius="sharp" data-buttons="arrow" data-motion>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title><%= t("landing.meta.title") %></title>
+<meta name="description" content="<%= t("landing.meta.description") %>">
+<meta property="og:type" content="website">
+<meta property="og:title" content="<%= t("landing.meta.title") %>">
+<meta property="og:description" content="<%= t("landing.meta.description") %>">
+<meta property="og:image" content="/share.jpg">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0b1020">
+<meta name="site-kind" content="software">
+<meta name="page-type" content="software">
+<link rel="stylesheet" href="/taste/system.css">
+<link rel="stylesheet" href="/taste/ui/cards.css">
+<link rel="stylesheet" href="/taste/motion/motion.css">
+<link rel="stylesheet" href="/taste/backgrounds/backgrounds.css">
+<link rel="stylesheet" href="/taste/layout/layout.css">
+<link rel="stylesheet" href="/taste/icons/icon.css">
+<link rel="stylesheet" href="/taste/ui/base.css">
+<link rel="stylesheet" href="/taste/ui/window/fragment.css">
+<link rel="stylesheet" href="/taste/ui/notify/fragment.css">
+<link rel="stylesheet" href="/taste/ui/terminal-run/fragment.css">
+<link rel="stylesheet" href="/taste/ui/code/fragment.css">
+<style>
+@font-face { font-family: "Geist"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/geist-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Geist"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/geist-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Geist"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/geist-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Geist Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/geist-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Geist Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/geist-mono-latin-500-normal.woff2") format("woff2"); }
+:root {
+  --p-bg: #0b1020; --p-surface: #141d36; --p-ink: #e8ecf6; --p-muted: #8f9bb8;
+  --p-accent: #4f8cff; --p-accent-ink: #0b1020;
+  --p-action: #4f8cff; --p-action-ink: #0b1020;
+  --p-inv-bg: #0e1526; --p-inv-surface: #16203c; --p-inv-ink: #e8ecf6; --p-inv-muted: #8f9bb8;
+  --p-inv-accent: #7aa8ff; --p-inv-accent-ink: #0b1020; --p-inv-action: #e8ecf6; --p-inv-action-ink: #0b1020;
+  --font-display: "Geist", system-ui, sans-serif; --font-text: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --display-weight: 600; --display-tracking: -0.03em; --display-tracking-xl: -0.04em; --ly-scale: .98;
+  --up: #34d399; --down: #f87171; --degraded: #fbbf24; --pending: #94a3b8;
+  --ground-bg: #1a2544; --ground-surface: #2a3a63; --ground-accent: #4f8cff;
+}
+/* the lit ground of the hero art: deep navy with one cobalt light and a fine grain (the page's one effect) */
+.hero__art { --ly-cut: 0px; position: relative; background:
+    radial-gradient(70% 60% at 16% 10%, color-mix(in oklab, var(--p-accent) 22%, transparent), transparent 70%),
+    radial-gradient(60% 55% at 92% 96%, color-mix(in oklab, var(--p-accent) 12%, transparent), transparent 72%),
+    linear-gradient(160deg, #101a33 0%, #0b1020 70%); }
+.hero__art::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .18; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .8 0 0 0 0 .85 0 0 0 0 1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+/* ---- BeaconDock window mock (d-*) ---- */
+.d-win { background: var(--p-surface); border: 1px solid color-mix(in oklab, var(--p-accent) 18%, transparent); border-radius: 12px; box-shadow: 0 30px 80px -30px rgb(0 0 0 / .8), 0 0 0 1px rgb(255 255 255 / .03); overflow: hidden; font-family: var(--font-text); color: var(--p-ink); }
+.d-win__bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid rgb(255 255 255 / .07); font-size: 12px; color: var(--p-muted); }
+.d-win__dots { display: flex; gap: 6px; } .d-win__dots i { width: 10px; height: 10px; border-radius: 50%; background: #2a3654; }
+.d-win__dots i:first-child { background: #f87171; } .d-win__dots i:nth-child(2) { background: #fbbf24; } .d-win__dots i:last-child { background: #34d399; }
+.d-win__body { display: grid; grid-template-columns: 148px minmax(0,1fr); min-height: 260px; }
+.d-side { border-right: 1px solid rgb(255 255 255 / .07); padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; color: var(--p-muted); }
+.d-side span { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; }
+.d-side span i { width: 7px; height: 7px; border-radius: 2px; background: #33436b; flex: none; }
+.d-side span.is-on { background: rgb(79 140 255 / .12); color: var(--p-ink); } .d-side span.is-on i { background: var(--p-accent); }
+.d-side__label { margin-top: 10px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: #5b6a8f; }
+.d-main { padding: 12px 14px; min-width: 0; }
+.d-main__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.d-main__head h4 { margin: 0; font-size: 14px; font-weight: 600; color: var(--p-ink); }
+.d-tabs { display: flex; gap: 14px; margin: 8px 0 6px; font-size: 12px; color: var(--p-muted); border-bottom: 1px solid rgb(255 255 255 / .07); padding-bottom: 8px; }
+.d-tabs span.is-on { color: var(--p-ink); font-weight: 500; }
+.d-rows { display: flex; flex-direction: column; }
+.d-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 12px; align-items: center; padding: 6px 0; border-top: 1px solid rgb(255 255 255 / .05); font-size: 12.5px; }
+.d-row:first-child { border-top: 0; }
+.d-row b { display: block; font-weight: 500; color: var(--p-ink); font-family: var(--font-mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.d-row small { display: block; color: var(--p-muted); font-size: 11px; margin-top: 2px; }
+.d-row .num { font-family: var(--font-mono); font-size: 11.5px; color: var(--p-muted); }
+.d-chip { font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.d-chip--up { background: rgb(52 211 153 / .12); color: var(--up); }
+.d-chip--down { background: rgb(248 113 113 / .12); color: var(--down); }
+.d-chip--deg { background: rgb(251 191 36 / .12); color: var(--degraded); }
+.d-chip--pend { background: rgb(148 163 184 / .12); color: var(--pending); }
+.d-chip--acc { background: rgb(79 140 255 / .14); color: #9cc0ff; }
+/* ---- looping note card ---- */
+.ly-piece--note { left: var(--s-6); bottom: var(--s-6); width: 300px; z-index: 2; }
+.d-card { background: var(--p-surface); border: 1px solid rgb(255 255 255 / .08); border-radius: 12px; padding: 14px 16px; box-shadow: 0 24px 60px -24px rgb(0 0 0 / .85); font-family: var(--font-text); color: var(--p-ink); }
+.d-card__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.d-card__row h5 { margin: 0; font-size: 13px; font-weight: 600; }
+.d-note__line { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 12.5px; color: var(--p-muted); border-top: 1px solid rgb(255 255 255 / .06); }
+.d-note__line:first-of-type { border-top: 0; }
+.d-note__line i { width: 18px; height: 18px; border-radius: 50%; flex: none; display: grid; place-items: center; background: rgb(52 211 153 / .12); color: var(--up); font-style: normal; font-size: 11px; font-weight: 700; }
+.d-note__line i.warn { background: rgb(251 191 36 / .12); color: var(--degraded); }
+.d-note__line b { font-weight: 500; color: var(--p-ink); }
+/* ---- app-frame ---- */
+.app.ui { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-top: var(--s-7); background: var(--p-surface); border: 1px solid rgb(255 255 255 / .08); border-radius: 14px; box-shadow: 0 30px 80px -30px rgb(0 0 0 / .8); overflow: hidden; }
+.app > .app__pane { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+.app > .app__pane + .app__pane { border-left: 1px solid rgb(255 255 255 / .08); }
+.app > .app__pane > .ui-panel { width: 100%; border: 0; border-radius: 0; box-shadow: none; }
+.app > .app__pane::after { content: ""; position: absolute; inset: auto 0 0 0; height: 64px; background: linear-gradient(transparent, var(--p-surface)); pointer-events: none; }
+@media (min-width: 1024px) and (max-width: 1279px) { .app.ui { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); } }
+@media (max-width: 1023px) {
+  .app.ui { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .app > .app__pane--list { max-height: 252px; }
+  .app > .app__pane--list::after { display: none; }
+  .app .ui-win__side { display: none; }
+  .app .ui-win__body { grid-template-columns: minmax(0, 1fr); }
+  .app > .app__pane + .app__pane { border-left: 0; border-top: 1px solid rgb(255 255 255 / .08); }
+}
+@media (max-width: 639px) {
+  .app.ui { grid-template-rows: minmax(0, 1fr); }
+  .app > .app__pane--list { display: none; }
+  .app > .app__pane + .app__pane { border-top: 0; }
+}
+/* semantic status chips inside the kit's window rows */
+.app .ui-win__st.bd-st--up, .app .ui-win__st.bd-st--deg, .app .ui-win__st.bd-st--down, .app .ui-win__st.bd-st--pend { font-weight: 600; }
+.app .ui-win__st.bd-st--up { color: var(--up); } .app .ui-win__st.bd-st--deg { color: var(--degraded); }
+.app .ui-win__st.bd-st--down { color: var(--down); } .app .ui-win__st.bd-st--pend { color: var(--pending); }
+.app .ui-win__who, .app .ui-win__sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* open monitor pane */
+.bd-detail { padding: 14px 20px; font-family: var(--font-text); color: var(--p-ink); }
+.bd-detail__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.bd-detail__name { font-family: var(--font-mono); font-size: 15px; font-weight: 600; }
+.bd-detail__url { font-family: var(--font-mono); font-size: 11px; color: var(--p-muted); margin-top: 3px; word-break: break-all; }
+.bd-detail__uptime { margin-top: 10px; font-size: 12px; color: var(--p-muted); }
+.bd-bars { display: flex; gap: 3px; margin-top: 6px; }
+.bd-bars i { flex: 1; height: 22px; border-radius: 3px; background: var(--up); opacity: .85; }
+.bd-bars i.d { background: var(--degraded); opacity: .9; } .bd-bars i.x { background: var(--down); opacity: .9; }
+.bd-cols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 20px; margin-top: 12px; }
+.bd-h { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: #b9c2da; margin: 0 0 6px; }
+.bd-row { display: grid; grid-template-columns: 44px minmax(0,1fr) auto; gap: 8px; align-items: center; padding: 3px 0; border-top: 1px solid rgb(255 255 255 / .05); font-size: 11.5px; font-family: var(--font-mono); }
+.bd-row:first-of-type { border-top: 0; }
+.bd-row time { color: var(--p-muted); font-size: 10.5px; }
+.bd-row .st { font-size: 11px; font-weight: 600; }
+.bd-row .st.up { color: var(--up); } .bd-row .st.down { color: var(--down); } .bd-row .st.deg { color: var(--degraded); }
+.bd-row .ms { color: var(--p-muted); font-size: 10.5px; }
+.bd-inc { display: flex; flex-direction: column; }
+.bd-inc .bd-row { grid-template-columns: minmax(0,1fr) auto; }
+@media (max-width: 900px) { .bd-cols { grid-template-columns: minmax(0,1fr); } }
+/* ---- features panels ---- */
+#checks .panel { --p-h: 190px; background: linear-gradient(165deg, #243354 0%, #1a2544 60%, #17203a 100%); }
+.card--open .panel, .menu-card .panel { --p-h: auto; }
+.panel .stage > .at-rise.fit { --ay: 12px; --ay-sm: 10px; bottom: 12px; }
+@media (max-width: 1279px) and (min-width: 640px) { #checks .panel { --p-h: 220px; } }
+@media (min-width: 640px) { #checks { --padt: 96px; --padb: 56px; } #checks .section-head { margin-bottom: 16px; max-width: none; } }
+#checks .card { --c-pad: 24px; }
+#checks .card > .panel { margin-top: 20px; }
+@media (max-width: 900px) { #checks .fm-note > span:not(.ic) > span { display: none; } }
+@media (max-width: 639px) { #checks .panel { --p-h: 195px; } }
+/* custom feature mocks (compact, kit-styled) */
+.panel .at-rise .fm { width: 100%; height: 100%; box-sizing: border-box; }
+.fm { font-family: var(--font-text); color: var(--p-ink); padding: 10px 14px; }
+.fm__title { font-family: var(--font-mono); font-size: 11.5px; color: var(--p-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.fm__title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--up); }
+.fm__cmd { font-family: var(--font-mono); font-size: 12px; color: var(--p-ink); margin-bottom: 8px; }
+.fm__cmd .sig { color: #7aa8ff; margin-right: 8px; }
+.fm__ln { font-family: var(--font-mono); font-size: 11.5px; color: #b9c2da; padding: 4px 0; display: flex; gap: 10px; }
+.fm__ln .ok { color: var(--up); flex: none; width: 14px; }
+.fm__ln .dim { color: var(--p-muted); }
+.fm-note { display: flex; gap: 10px; padding: 4px 0; border-top: 1px solid rgb(255 255 255 / .07); font-size: 12px; align-items: flex-start; }
+.fm-note:first-of-type { border-top: 0; }
+.fm-note .ic { width: 18px; height: 18px; border-radius: 50%; flex: none; display: grid; place-items: center; font-style: normal; font-size: 10px; font-weight: 700; margin-top: 1px; }
+.fm-note .ic.warn { background: rgb(251 191 36 / .14); color: var(--degraded); }
+.fm-note .ic.bad { background: rgb(248 113 113 / .14); color: var(--down); }
+.fm-note .ic.ok { background: rgb(52 211 153 / .14); color: var(--up); }
+.fm-note b { display: block; font-weight: 500; color: var(--p-ink); font-size: 12px; }
+.fm-note span { color: var(--p-muted); font-size: 11px; }
+.fm-note time { margin-left: auto; color: var(--p-muted); font-size: 10.5px; font-family: var(--font-mono); flex: none; }
+.fm-code { font-family: var(--font-mono); font-size: 11px; line-height: 1.5; color: #b9c2da; white-space: pre-wrap; word-break: break-all; }
+.fm-code .c { color: var(--p-muted); } .fm-code .s { color: #9cc0ff; } .fm-code .k { color: var(--degraded); }
+/* glance card beside FAQ */
+.glance { font-family: var(--font-text); color: var(--p-ink); padding: 18px 20px; }
+.glance__h { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: #b9c2da; margin: 0 0 12px; }
+.glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-5); align-content: center; height: 100%; box-sizing: border-box; }
+.glance__col { display: flex; flex-direction: column; gap: 6px; }
+.glance__col b { font-family: var(--font-mono); font-size: 26px; font-weight: 600; }
+.glance__col span { font-size: 12px; color: #b9c2da; line-height: 1.35; }
+.glance__col .up { color: var(--up); } .glance__col .deg { color: var(--degraded); }
+/* status page mini mock */
+.sp-mock { font-family: var(--font-text); color: var(--p-ink); padding: 10px 12px; background: rgb(12 20 36 / .95); border: 1px solid rgb(255 255 255 / .08); border-radius: 10px; }
+.sp-mock__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sp-mock__host { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; }
+.sp-mock__all { font-size: 11px; font-weight: 600; color: var(--up); }
+.sp-mock__row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 4px 0; line-height: 1.35; } border-top: 1px solid rgb(255 255 255 / .06); font-size: 12px; }
+.sp-mock__row b { font-weight: 500; font-family: var(--font-mono); font-size: 11.5px; }
+.sp-mock__row small { display: block; color: var(--p-muted); font-size: 10.5px; margin-top: 1px; }
+.sp-mock__mini { display: flex; gap: 2px; }
+.sp-mock__mini i { width: 7px; height: 14px; border-radius: 2px; background: var(--up); }
+.sp-mock__mini i.d { background: var(--degraded); } .sp-mock__mini i.x { background: var(--down); }
+.hero__proof { font-size: var(--t-small); color: var(--p-muted); }
+.hero__art > .ly-piece--note { left: var(--s-6); bottom: var(--s-6); width: 300px; z-index: 2; }
+@media (max-width: 1023px) {
+  .hero--collage { min-height: 100svh; }
+  .hero__art > .ly-piece--note { left: var(--s-4); bottom: var(--s-4); width: 270px; }
+}
+@media (max-width: 639px) { .hero__art > .ly-piece:not(.ly-piece--main) { display: none; } }
+/* mobile chrome fixes */
+@media (max-width: 639px) {
+  .nav__actions .nav__link { display: none; }
+  .section-head--split { flex-direction: column; align-items: flex-start; gap: var(--s-4); }
+}
+.close__word { font-size: clamp(34px, 10.5vw, 148px) !important; line-height: 1.35; flex: none; }
+/* muted text that must still read as body copy (7:1 on the page ground) */
+#product .t-lead, .bd-h { color: #b9c2da; }
+.d-side__label { color: #8fa0c8; }
+/* status chips inside the kit window rows: own colours, no kit state fill */
+.app .ui-win__st { background: transparent; }
+.app .ui-win__st.bd-st--up { color: var(--up); } .app .ui-win__st.bd-st--deg { color: var(--degraded); }
+.app .ui-win__st.bd-st--down { color: var(--down); } .app .ui-win__st.bd-st--pend { color: var(--pending); }
+.app .ui-win__who, .app .ui-win__sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-mock { color: var(--p-ink); }
+#faq .faq__item { padding: 15px 0; }
+@media (max-width: 480px) { .glance { grid-template-columns: 1fr; gap: 8px; } .glance__col { flex-direction: row; align-items: baseline; justify-content: space-between; } }
+@media (max-width: 380px) { .nav:not(.is-open) .nav__actions { display: none; } }
+@media (max-width: 639px) { .bd-cols > div:first-child > .bd-row:last-of-type { display: none; } .bd-cols > div:last-child { display: none; } }
+.sp-mock__row b { color: var(--p-ink); }
+.hero-facts { display: flex; gap: var(--s-6); margin-top: var(--s-5); }
+.hero-facts div { display: flex; flex-direction: column; gap: 2px; }
+.hero-facts dt { font-size: var(--t-small); color: var(--p-muted); }
+.hero-facts dd { margin: 0; font-family: var(--font-mono); font-size: var(--t-small); color: var(--p-ink); }
+@media (max-width: 639px) { .hero-facts { display: none; } }
+</style>
+<script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
+<script src="/taste/backgrounds/backgrounds.js"></script>
+<script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
+<link rel="modulepreload" href="/taste/moments/moments.js">
+<link rel="modulepreload" href="/taste/moments/lib.js">
+<link rel="modulepreload" href="/taste/moments/cursor-spotlight/moment.js">
+<link rel="modulepreload" href="/taste/moments/letters-assemble/moment.js">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav__bar">
+    <a class="skip-link" href="#top"><%= t("landing.nav.skip", default: "Skip to content") %></a>
+    <a class="nav__logo" href="#top">BeaconDock</a>
+    <nav class="nav__links" aria-label="Main">
+      <div class="nav__item">
+        <a class="nav__link" href="#product"><%= t("landing.nav.product") %> <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="nav__menu">
+          <div class="wrap grid">
+            <div class="menu-col span-3">
+              <p class="t-label"><%= t("landing.nav.menu_group") %></p>
+              <a href="#product"><%= t("landing.nav.menu_scheduled") %><span><%= t("landing.nav.menu_incidents") %></span></a>
+              <a href="#product"><%= t("landing.nav.menu_status_pages") %><span><%= t("landing.nav.menu_card_line") %></span></a>
+            </div>
+            <div class="menu-col span-3">
+              <p class="t-label"><%= t("landing.nav.menu_api") %></p>
+              <a href="#checks"><%= t("landing.nav.menu_rest") %><span>/api/v1</span></a>
+              <a href="#checks"><%= t("landing.nav.menu_keys") %><span><%= t("landing.features.c4_p") %></span></a>
+            </div>
+            <a class="menu-card span-3 start-10" href="#product">
+              <div class="panel"><div class="sp-mock" aria-hidden="true">
+                <div class="sp-mock__head"><span class="sp-mock__host">status.acme.dev</span><span class="sp-mock__all"><%= t("landing.features.c3_all") %></span></div>
+                <div class="sp-mock__row"><span><b>api.acme.dev</b><small>GET · 30 s</small></span><span class="sp-mock__mini"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+                <div class="sp-mock__row"><span><b>app.acme.dev</b><small>GET · 60 s</small></span><span class="sp-mock__mini"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              </div></div>
+              <span class="t-card"><%= t("landing.nav.menu_card_title") %></span>
+              <span class="t-small muted"><%= t("landing.nav.menu_card_line") %></span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="nav__item"><a class="nav__link" href="#checks"><%= t("landing.nav.features") %></a></div>
+      <div class="nav__item"><a class="nav__link" href="#faq"><%= t("landing.nav.faq") %></a></div>
+    </nav>
+    <div class="nav__actions">
+      <a class="nav__link" href="<%= new_session_path %>"><%= t("landing.nav.sign_in") %></a>
+      <a class="btn btn--primary" href="<%= sign_up_path %>"><%= t("landing.nav.start") %></a>
+    </div>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero hero--collage" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h"><%= t("landing.hero.title") %></h1>
+        <p class="hero__lead"><%= t("landing.hero.lead") %></p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="<%= sign_up_path %>"><%= t("landing.hero.primary") %><svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+          <a class="btn btn--secondary" href="<%= new_session_path %>"><%= t("landing.hero.secondary") %></a>
+        </div>
+        <p class="hero__proof"><%= t("landing.hero.proof") %></p>
+        <dl class="hero-facts">
+          <div><dt><%= t("landing.facts.interval") %></dt><dd>30 s</dd></div>
+          <div><dt><%= t("landing.facts.storage") %></dt><dd>SQLite</dd></div>
+          <div><dt><%= t("landing.facts.i18n") %></dt><dd>EN · IT</dd></div>
+        </dl>
+      </div>
+      <div class="hero__art span-6 start-7" role="img" aria-label="<%= t("landing.hero.art_label") %>" data-moment="cursor-spotlight" data-moment-opts='{"rest": [0.7, 0.3], "radius": 420}'>
+        <div class="ly-piece ly-piece--main d-win" aria-hidden="true">
+          <div class="d-win__bar"><span class="d-win__dots"><i></i><i></i><i></i></span><span><%= t("landing.hero.window_title") %></span></div>
+          <div class="d-win__body">
+            <div class="d-side">
+              <span class="is-on"><i></i><%= t("landing.hero.side_monitors") %></span>
+              <span><i></i><%= t("landing.hero.side_incidents") %></span>
+              <span><i></i><%= t("landing.hero.side_status") %></span>
+              <span><i></i><%= t("landing.hero.side_keys") %></span>
+              <span class="d-side__label">acme</span>
+              <span><i></i>prod</span><span><i></i>staging</span>
+            </div>
+            <div class="d-main">
+              <div class="d-main__head"><h4><%= t("landing.hero.side_monitors") %></h4><span class="d-chip d-chip--acc">6</span></div>
+              <div class="d-tabs"><span class="is-on"><%= t("landing.hero.all") %></span><span><%= t("landing.hero.degraded_tab") %></span><span><%= t("landing.hero.down_tab") %></span></div>
+              <div class="d-rows">
+                <div class="d-row"><div><b><%= t("landing.monitor_names.m1") %></b><small>GET · 30 s</small></div><span class="num">84 ms</span><span class="d-chip d-chip--up"><%= t("landing.st.up") %></span></div>
+                <div class="d-row"><div><b><%= t("landing.monitor_names.m2") %></b><small>GET · 30 s</small></div><span class="num">121 ms</span><span class="d-chip d-chip--up"><%= t("landing.st.up") %></span></div>
+                <div class="d-row"><div><b><%= t("landing.monitor_names.m3") %></b><small>GET · 60 s</small></div><span class="num">240 ms</span><span class="d-chip d-chip--deg"><%= t("landing.st.degraded") %></span></div>
+                <div class="d-row"><div><b><%= t("landing.monitor_names.m4") %></b><small>HEAD · 30 s</small></div><span class="num">31 ms</span><span class="d-chip d-chip--up"><%= t("landing.st.up") %></span></div>
+                <div class="d-row"><div><b><%= t("landing.monitor_names.m6") %></b><small>GET · 30 s</small></div><span class="num">—</span><span class="d-chip d-chip--down"><%= t("landing.st.down") %></span></div>
+                <div class="d-row"><div><b><%= t("landing.monitor_names.m5") %></b><small>GET · 60 s</small></div><span class="num">96 ms</span><span class="d-chip d-chip--pend"><%= t("landing.st.pending") %></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ly-piece ly-piece--note d-card" aria-hidden="true" data-ly-steps="700">
+          <div class="d-card__row"><h5><%= t("landing.hero.note_title") %></h5><span class="d-chip d-chip--up" data-step data-step-at="4"><%= t("landing.st.resolved") %></span></div>
+          <div class="d-note__line" data-step><i class="warn">!</i><span><b><%= t("landing.monitor_names.m6") %></b> <%= t("landing.hero.note_line1") %></span></div>
+          <div class="d-note__line" data-step><i>!</i><span><%= t("landing.hero.note_line2") %></span></div>
+          <div class="d-note__line" data-step><i>✓</i><span><%= t("landing.hero.note_line3") %></span></div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section" id="product" aria-labelledby="product-h">
+    <div class="wrap">
+      <div class="grid">
+        <div class="section-head span-5">
+          <h2 id="product-h"><%= t("landing.app_frame.h2") %></h2>
+        </div>
+        <p class="t-lead span-6 start-7"><%= t("landing.app_frame.p") %></p>
+      </div>
+      <div class="ui app fill" role="img" aria-label="<%= t("landing.app_frame.aria") %>" data-ui-pause-host>
+        <div class="app__pane app__pane--list">
+          <div class="ui ui-panel ui-win" data-ui="window">
+            <div class="ui-win__bar">
+              <span class="ui-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="ui-win__crumb"><%= t("landing.app_frame.crumb") %> <i>/</i> <b><%= t("landing.hero.side_monitors") %></b></span>
+              <span class="ui-spacer"></span>
+              <span class="ui-win__search" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><span class="ui-win__ph"><%= t("landing.app_frame.search") %></span></span>
+            </div>
+            <div class="ui-win__body">
+              <nav class="ui-win__side" aria-hidden="true">
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M2.5 9h3l1 1.5h3l1-1.5h3"/><path d="M2.5 9 4 3.5h8L13.5 9v3.5h-11z"/></svg><%= t("landing.hero.side_overview") %></span>
+                <span class="ui-win__nav is-on"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M2 3.5h12M2 8h12M2 12.5h12"/></svg><%= t("landing.hero.side_monitors") %><em>6</em></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M8 2.5 14 13H2z"/><path d="M8 7v2.5M8 11v.5"/></svg><%= t("landing.hero.side_incidents") %><em>1</em></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg><%= t("landing.hero.side_status") %></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5"/></svg><%= t("landing.hero.side_keys") %></span>
+              </nav>
+            <div class="ui-win__main">
+              <div class="ui-win__cols" aria-hidden="true"><span></span><span><%= t("landing.col.monitor") %></span><span><%= t("landing.col.endpoint") %></span><span><%= t("landing.col.status") %></span><span><%= t("landing.col.age") %></span></div>
+              <ul class="ui-win__rows">
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="1">A</span><span class="ui-win__who"><%= t("landing.monitor_names.m1") %></span><span class="ui-win__sub">api.acme.dev · GET · 30 s</span><span class="ui-win__st is-done bd-st--up" data-st><%= t("landing.st.up") %></span><span class="ui-win__age">12 s</span></li>
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="2">A</span><span class="ui-win__who"><%= t("landing.monitor_names.m2") %></span><span class="ui-win__sub">app.acme.dev · GET · 30 s</span><span class="ui-win__st is-done bd-st--up" data-st><%= t("landing.st.up") %></span><span class="ui-win__age">9 s</span></li>
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="3">D</span><span class="ui-win__who"><%= t("landing.monitor_names.m3") %></span><span class="ui-win__sub">docs.acme.dev · GET · 60 s</span><span class="ui-win__st is-work bd-st--deg" data-st><%= t("landing.st.degraded") %></span><span class="ui-win__age">41 s</span></li>
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="4">C</span><span class="ui-win__who"><%= t("landing.monitor_names.m4") %></span><span class="ui-win__sub">cdn.acme.dev · HEAD · 30 s</span><span class="ui-win__st is-done bd-st--up" data-st><%= t("landing.st.up") %></span><span class="ui-win__age">7 s</span></li>
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="5">B</span><span class="ui-win__who"><%= t("landing.monitor_names.m6") %></span><span class="ui-win__sub">billing.acme.dev · GET · 30 s</span><span class="ui-win__st is-open bd-st--down" data-st><%= t("landing.st.down") %></span><span class="ui-win__age">3 m</span></li>
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="1">S</span><span class="ui-win__who"><%= t("landing.monitor_names.m5") %></span><span class="ui-win__sub">status.acme.dev · GET · 60 s</span><span class="ui-win__st bd-st--pend" data-st><%= t("landing.st.pending") %></span><span class="ui-win__age">—</span></li>
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="2">W</span><span class="ui-win__who">webhooks.acme.dev</span><span class="ui-win__sub">hooks.acme.dev · POST · 120 s</span><span class="ui-win__st is-done bd-st--up" data-st><%= t("landing.st.up") %></span><span class="ui-win__age">58 s</span></li>
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="3">M</span><span class="ui-win__who">metrics.acme.dev</span><span class="ui-win__sub">metrics.acme.dev · GET · 300 s</span><span class="ui-win__st is-done bd-st--up" data-st><%= t("landing.st.up") %></span><span class="ui-win__age">2 m</span></li>
+                <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="4">B</span><span class="ui-win__who">blog.acme.dev</span><span class="ui-win__sub">blog.acme.dev · GET · 300 s</span><span class="ui-win__st is-work bd-st--deg" data-st><%= t("landing.st.degraded") %></span><span class="ui-win__age">1 m</span></li>
+              </ul>
+            </div>
+            </div>
+          </div>
+        </div>
+        <div class="app__pane app__pane--open">
+          <div class="bd-detail">
+            <div class="bd-detail__head">
+              <div>
+                <div class="bd-detail__name"><%= t("landing.app_frame.detail_name") %></div>
+                <div class="bd-detail__url"><%= t("landing.app_frame.detail_url") %></div>
+              </div>
+              <span class="d-chip d-chip--up" style="font-size:12px;padding:5px 12px"><%= t("landing.st.up") %></span>
+            </div>
+            <div class="bd-detail__uptime"><%= t("landing.app_frame.detail_uptime") %></div>
+            <div class="bd-bars" role="img" aria-label="<%= t("landing.app_frame.bars_label") %>">
+              <% 30.times do |i| %><i class="<%= i == 11 ? 'd' : (i == 23 ? 'x' : '') %>"></i><% end %>
+            </div>
+            <div class="bd-cols">
+              <div>
+                <h3 class="bd-h"><%= t("landing.app_frame.recent_checks") %></h3>
+                <div class="bd-row"><time>14:32:07</time><span>GET /health</span><span class="st up">200</span><span class="ms">84 ms</span></div>
+                <div class="bd-row"><time>14:31:37</time><span>GET /health</span><span class="st up">200</span><span class="ms">79 ms</span></div>
+                <div class="bd-row"><time>14:30:37</time><span>GET /health</span><span class="st deg">200</span><span class="ms">412 ms</span></div>
+                <div class="bd-row"><time>14:29:37</time><span>GET /health</span><span class="st down">503</span><span class="ms">timeout</span></div>
+              </div>
+              <div>
+                <h3 class="bd-h"><%= t("landing.app_frame.incidents") %></h3>
+                <div class="bd-inc">
+                  <div class="bd-row"><span>14:28 – 14:31</span><span class="st deg">degraded · 503s</span></div>
+                  <div class="bd-row"><span>Mar 04</span><span class="st up">resolved</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section g2m" id="checks" aria-labelledby="checks-h">
+    <div class="wrap">
+      <div class="group">
+        <div class="section-head">
+          <h2 id="checks-h"><%= t("landing.features.h2") %> <span class="muted"><%= t("landing.features.muted") %></span></h2>
+        </div>
+        <div class="grid">
+          <article class="card card--row card--open span-6">
+            <h3><%= t("landing.features.c1_h") %></h3>
+            <p><%= t("landing.features.c1_p") %></p>
+            <div class="panel" role="img" aria-label="<%= t("landing.features.c1_h") %>">
+              <div class="stage"><div class="at-rise fit fm" aria-hidden="true">
+                <div class="fm__title"><span class="dot"></span><%= t("landing.features.c1_title") %></div>
+                <div class="fm__cmd"><span class="sig">$</span><%= t("landing.features.c1_cmd") %></div>
+                <div class="fm__ln"><span class="ok">→</span><span><%= t("landing.features.c1_l1") %></span></div>
+                <div class="fm__ln"><span class="ok">←</span><span><%= t("landing.features.c1_l2") %></span></div>
+                <div class="fm__ln"><span class="dim">·</span><span class="dim"><%= t("landing.features.c1_l3") %></span></div>
+                <div class="fm__ln"><span class="dim">·</span><span class="dim"><%= t("landing.features.c1_l4") %></span></div>
+              </div></div>
+            </div>
+          </article>
+          <article class="card card--row card--open span-6">
+            <h3><%= t("landing.features.c2_h") %></h3>
+            <p><%= t("landing.features.c2_p") %></p>
+            <div class="panel" role="img" aria-label="<%= t("landing.features.c2_h") %>">
+              <div class="stage"><div class="at-rise fit fm" aria-hidden="true">
+                <div class="fm__title"><span class="dot" style="background:var(--degraded)"></span><%= t("landing.features.c2_h") %></div>
+                <div class="fm-note"><span class="ic bad">!</span><span><b><%= t("landing.features.c2_n1_t") %></b><span><%= t("landing.features.c2_n1_b") %></span></span><time>now</time></div>
+                <div class="fm-note"><span class="ic warn">…</span><span><b><%= t("landing.features.c2_n2_t") %></b><span><%= t("landing.features.c2_n2_b") %></span></span><time>4m</time></div>
+                <div class="fm-note"><span class="ic ok">✓</span><span><b><%= t("landing.features.c2_n3_t") %></b><span><%= t("landing.features.c2_n3_b") %></span></span><time>46s</time></div>
+              </div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="group">
+        <div class="grid">
+          <article class="card card--row card--open span-6">
+            <h3><%= t("landing.features.c3_h") %></h3>
+            <p><%= t("landing.features.c3_p") %></p>
+            <div class="panel" role="img" aria-label="<%= t("landing.features.c3_h") %>">
+              <div class="stage"><div class="at-rise fit sp-mock" aria-hidden="true">
+                <div class="sp-mock__head"><span class="sp-mock__host"><%= t("landing.features.c3_head") %></span><span class="sp-mock__all"><%= t("landing.features.c3_all") %></span></div>
+                <div class="sp-mock__row"><span><b><%= t("landing.monitor_names.m1") %></b><small>api.acme.dev</small></span><span class="sp-mock__mini"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+                <div class="sp-mock__row"><span><b><%= t("landing.monitor_names.m3") %></b><small>docs.acme.dev</small></span><span class="sp-mock__mini"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="d"></i><i></i><i></i><i></i><i></i><i></i><i class="x"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+                <div class="sp-mock__row"><span><b><%= t("landing.monitor_names.m6") %></b><small>billing.acme.dev</small></span><span class="sp-mock__mini"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              </div></div>
+            </div>
+          </article>
+          <article class="card card--row card--open span-6">
+            <h3><%= t("landing.features.c4_h") %></h3>
+            <p><%= t("landing.features.c4_p") %></p>
+            <div class="panel" role="img" aria-label="<%= t("landing.features.c4_h") %>">
+              <div class="stage"><div class="at-rise fit fm" aria-hidden="true">
+                <div class="fm__title"><span class="dot" style="background:var(--p-accent)"></span><%= t("landing.features.c4_tab") %> · <%= t("landing.features.c4_chip") %></div>
+                <div class="fm-code"><span class="k">curl</span> -X POST <span class="s">/api/v1/monitors</span> \
+  -H <span class="s">"Authorization: Bearer …"</span> \
+  -d <span class="s">url=api.acme.dev/health</span>
+<span class="c"># → 201 { id: 42, status: "pending" }</span></div>
+              </div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section statement" data-moment="letters-assemble" data-moment-opts='{"spread": 1}' aria-label="<%= t("landing.statement.type") %>">
+    <div class="wrap">
+      <h2 class="mo-la__type" style="font-size: clamp(40px, 7vw, 96px)"><%= t("landing.statement.type") %></h2>
+      <p class="t-lead muted" style="margin-top: var(--s-4)"><%= t("landing.statement.sub") %></p>
+    </div>
+  </section>
+
+  <section class="section" id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <div class="section-head"><h2 id="faq-h"><%= t("landing.faq.h2") %></h2></div>
+      <div class="grid">
+        <div class="faq span-6">
+          <div class="faq__item"><h3><%= t("landing.faq.q1") %></h3><p><%= t("landing.faq.a1") %></p></div>
+          <div class="faq__item"><h3><%= t("landing.faq.q2") %></h3><p><%= t("landing.faq.a2") %></p></div>
+          <div class="faq__item"><h3><%= t("landing.faq.q3") %></h3><p><%= t("landing.faq.a3") %></p></div>
+          <div class="faq__item"><h3><%= t("landing.faq.q4") %></h3><p><%= t("landing.faq.a4") %></p></div>
+          <div class="faq__item"><h3><%= t("landing.faq.q5") %></h3><p><%= t("landing.faq.a5") %></p></div>
+        </div>
+        <div class="span-6 start-7">
+          <div class="panel" style="--p-h:210px">
+            <div class="glance">
+              <p class="glance__h"><%= t("landing.faq.glance_h") %></p>
+              <div class="glance__col"><b class="up">99.98%</b><span><%= t("landing.faq.glance_uptime") %></span></div>
+              <div class="glance__col"><b>86,400</b><span><%= t("landing.faq.glance_checks") %></span></div>
+              <div class="glance__col"><b class="deg">2</b><span><%= t("landing.faq.glance_incidents") %></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer closing" id="contact" aria-labelledby="close-h">
+  <div class="wrap">
+    <div class="closing__cta close--word">
+      <div class="section-head--split">
+        <div><h2 id="close-h"><%= t("landing.close.h2") %></h2><p class="t-lead"><%= t("landing.close.p") %></p></div>
+        <a class="btn btn--primary" href="<%= sign_up_path %>"><%= t("landing.close.cta") %><svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+      </div>
+      <p class="close__word" aria-hidden="true"><%= t("landing.close.word") %></p>
+    </div>
+    <div class="closing__links">
+      <div class="grid">
+        <div class="span-6 stack-4">
+          <a class="nav__logo" href="#top">BeaconDock</a>
+          <p class="footer__lede"><%= t("landing.close.lede") %></p>
+        </div>
+        <div class="span-2 footer__col"><h3><%= t("landing.close.col_product") %></h3><ul>
+          <li><a href="#product"><%= t("landing.close.link_product") %></a></li>
+          <li><a href="#checks"><%= t("landing.close.link_features") %></a></li>
+          <li><a href="#faq"><%= t("landing.close.link_faq") %></a></li>
+        </ul></div>
+        <div class="span-2 footer__col"><h3><%= t("landing.close.col_dev") %></h3><ul>
+          <li><a href="#checks"><%= t("landing.close.link_api") %></a></li>
+          <li><a href="#product"><%= t("landing.close.link_status") %></a></li>
+        </ul></div>
+        <div class="span-2 footer__col"><h3><%= t("landing.close.col_account") %></h3><ul>
+          <li><a href="<%= new_session_path %>"><%= t("landing.close.link_signin") %></a></li>
+          <li><a href="<%= sign_up_path %>"><%= t("landing.close.link_signup") %></a></li>
+        </ul></div>
+      </div>
+      <div class="footer__legal">
+        <span><%= t("landing.close.legal") %></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="/taste/system.js"></script>
+<script type="module" src="/taste/motion/motion.js"></script>
+<script type="module" src="/taste/layout/layout.js"></script>
+</body>
+</html>
