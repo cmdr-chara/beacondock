@@ -103,6 +103,13 @@ main > .section:has(.mtable) { height: auto; min-height: min(72vh, 620px); }
 }
 
 .fleet.app { min-height: 440px; }
+/* a console window is a bounded app surface: fixed height on desktop, panes
+   scroll inside it — pane swaps never move the page below */
+@media (min-width: 1024px) {
+  .fleet.app { height: clamp(460px, 62vh, 640px); }
+  .app .ui-win__main { overflow-y: auto; }
+  .app__pane--open > .fleet__open { overflow-y: auto; }
+}
 .app .ui-win { height: 100%; width: 100%; }
 .app .ui-win__body { height: 100%; min-height: 0; grid-template-columns: 128px minmax(0, 1fr); }
 .app .ui-win__main { min-height: 0; }
@@ -166,9 +173,13 @@ button.ui-win__nav:hover { color: var(--u-ink); }
   .fleet__checkrow { gap: 8px; }
 }
 
-/* alert banners when MongoDB transition rules match */
-.alert-banner { display: flex; align-items: center; gap: var(--s-3); margin-top: var(--s-4); padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--p-surface); font-size: 14px; }
+/* alert banners when MongoDB transition rules match — a floating stack anchored
+   under the nav, so a transition never shifts the fleet app below it */
+.alert-stack { position: fixed; top: 84px; right: var(--s-5); z-index: 60; display: grid; gap: var(--s-2); width: min(380px, calc(100vw - 2 * var(--s-4))); pointer-events: none; }
+.alert-stack .alert-banner { pointer-events: auto; margin-top: 0; box-shadow: var(--u-shadow); }
+.alert-banner { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--p-surface); font-size: 14px; }
 .alert-banner button { margin-left: auto; }
+@media (max-width: 639px) { .alert-stack { top: 64px; right: var(--s-4); } }
 
 /* status chips in the kit's light window rows */
 .ui-win__st.st-up { color: #136f3a; box-shadow: inset 0 0 0 1px color-mix(in oklab, #136f3a 28%, transparent); background: color-mix(in oklab, #136f3a 7%, #ffffff); }

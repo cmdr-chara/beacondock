@@ -166,6 +166,7 @@ export default function FleetFrame({
 
   return (
     <>
+      <div className="alert-stack" aria-live="polite">
       {banner.map((b) => (
         <div key={b.id} className={`alert-banner st-${b.tone}`} role="status">
           <span className="st-dot" style={{ background: "currentColor" }} aria-hidden="true" />
@@ -180,6 +181,7 @@ export default function FleetFrame({
           </button>
         </div>
       ))}
+      </div>
       {fleet.offline ? (
         <div className="fleet__empty ui-panel" style={{ padding: "var(--s-6)" }}>
           <h3>The API did not answer</h3>
@@ -293,7 +295,7 @@ export default function FleetFrame({
 
           <div className="app__pane app__pane--open">
             {openMonitor ? (
-              <div className="ui-panel fleet__open">
+              <div key={openMonitor.id} className="ui-panel fleet__open">
                 <div className="fleet__pick">
                   <label htmlFor="pick-m">Monitor</label>
                   <select

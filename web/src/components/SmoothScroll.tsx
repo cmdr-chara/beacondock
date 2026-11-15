@@ -18,9 +18,11 @@ export default function SmoothScroll() {
     };
     raf = requestAnimationFrame(tick);
 
-    // same-document hash links travel through lenis (with nav clearance)
+    // same-document hash links travel through lenis (with nav clearance);
+    // links that handled their own click (defaultPrevented, e.g. fleet rows)
+    // are left alone — they update the URL without moving the page
     const onClick = (e: MouseEvent) => {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       const a = (e.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
       if (!a) return;
       const url = new URL(a.href, location.href);
