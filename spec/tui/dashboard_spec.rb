@@ -3,6 +3,14 @@ require "rails_helper"
 RSpec.describe Tui::Dashboard do
   subject(:dashboard) { described_class.new(io: StringIO.new, color: false) }
 
+  # db:prepare seeds fresh test databases — the list view asserts on global
+  # state, so each example starts from an empty fleet.
+  before do
+    Incident.delete_all
+    Check.delete_all
+    SiteMonitor.delete_all
+  end
+
   it "renders each monitor with status, latency and uptime" do
     monitor = create(:monitor, name: "API", last_status: :up, interval_seconds: 60)
     create(:check, monitor: monitor, status: "up", latency_ms: 84.0)
