@@ -46,7 +46,7 @@ export default function HomeSections({
           </div>
 
           <div className="grid">
-            <article className="card card--row card--open span-6">
+            <article className="card card--row card--open span-6" data-moment-block="">
               <h3>Uptime probes on a schedule</h3>
               <p>
                 Solid Queue dispatches GET or HEAD checks every 30 s to 1 h with TLS checks and up to three redirects.
@@ -228,7 +228,7 @@ export default function HomeSections({
               </div>
             </article>
 
-            <article className="card card--row card--open span-6">
+            <article className="card card--row card--open span-6" data-moment-block="">
               <h3>Incidents while monitoring</h3>
               <p>
                 A failed or timed-out check never counts as healthy; two consecutive downs open an incident and recovery
@@ -313,7 +313,7 @@ export default function HomeSections({
               </div>
             </article>
 
-            <article className="card card--row card--open span-6">
+            <article className="card card--row card--open span-6" data-moment-block="">
               <h3>Degraded responses, still monitoring</h3>
               <p>
                 Each monitor compares response latency against its warn threshold in milliseconds before marking the
@@ -434,7 +434,7 @@ export default function HomeSections({
               </div>
             </article>
 
-            <article className="card card--row card--open span-6">
+            <article className="card card--row card--open span-6" data-moment-block="">
               <h3>Check history kept 30 days</h3>
               <p>
                 Every probe records HTTP status and latency in milliseconds; PruneOldChecksJob clears rows past 30
