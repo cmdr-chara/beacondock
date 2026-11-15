@@ -15,6 +15,7 @@
   "dependencies": {
     "@fontsource/host-grotesk": "^5.2.5",
     "@fontsource/jetbrains-mono": "^5.2.5",
+    "lenis": "^1.3.27",
     "mongodb": "^6.10.0",
     "next": "^16.0.1",
     "react": "^19.2.0",

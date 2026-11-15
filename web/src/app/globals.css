@@ -19,9 +19,8 @@
 
 /* Page CSS: only what the kit lacks. */
 
-/* smooth anchor travel (the kit leaves scroll-behavior: auto; reduced-motion still
-   forces it back to auto via the kit's media query) */
-html { scroll-behavior: smooth; }
+/* scrolling is eased by Lenis (SmoothScroll.tsx) — native smooth would fight it,
+   and reduced-motion keeps the kit's instant scroll either way */
 
 /* slim scrollbar in the page palette — a floating ink pill on the page ground */
 html { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--p-ink) 32%, transparent) transparent; }

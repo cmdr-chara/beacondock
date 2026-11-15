@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import KitScripts from "@/components/KitScripts";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
+import SmoothScroll from "@/components/SmoothScroll";
 
 export const metadata: Metadata = {
   title: "BeaconDock: uptime monitor for HTTP APIs",
@@ -105,6 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="top">{children}</main>
         <SiteFooter />
         <KitScripts />
+        <SmoothScroll />
       </body>
     </html>
   );
