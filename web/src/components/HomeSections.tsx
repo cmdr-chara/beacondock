@@ -29,12 +29,12 @@ export default function HomeSections({
 
   return (
     <>
-      {/* features-2x2 on .ground-surface with iris-opens scroll transition */}
+      {/* features-2x2 on .ground-surface; the dealt scroll transitions all re-cover a
+          section on scroll-up, which reads as vanishing content on a data grid — so
+          this section stands statically and keeps its dealt moment off */}
       <section
         className="section ground-surface"
         id="checks"
-        data-moment="iris-opens"
-        data-moment-opts='{"from":"base"}'
         aria-labelledby="checks-h"
       >
         <div className="wrap">
