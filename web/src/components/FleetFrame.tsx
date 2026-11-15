@@ -193,12 +193,12 @@ export default function FleetFrame({
       ) : (
         <div
           className="panel fleet-shell"
-          data-fx="gradient-mesh"
+          data-fx="ruled-grounds"
           data-fx-seed="17"
-          data-fx-palette='{"bg":"#c6d3df","surface":"#d6e0e9","ink":"#25303a","muted":"#5d6873","accent":"#3f6a92"}'
-          data-fx-params='{"speed":0,"calm":0.2,"calmX":0.5,"calmY":0.6,"tint":0.5,"relief":0.3}'
+          data-fx-palette='{"bg":"#d4dde6","surface":"#dfe7ef","ink":"#25303a","muted":"#5d6873","accent":"#3f6a92"}'
+          data-fx-params='{"speed":0.15,"calm":0.55,"calmX":0.5,"calmY":0.55,"ink":0.35,"grain":0.3,"cell":18,"major":4,"reach":0.45,"focus":0.5}'
         >
-          <div className="ui app fleet">
+          <div className="ui ui-panel ui-win app fleet" data-ui="window">
           <div className="ui-win__bar app__bar">
             <span className="ui-win__crumb">
               BeaconDock <i>/</i> <b>Fleet</b>
@@ -212,8 +212,7 @@ export default function FleetFrame({
           </div>
 
           <div className="app__pane app__pane--list">
-            <div className="ui-panel ui-win" data-ui="window">
-              <div className="ui-win__body">
+            <div className="ui-win__body">
                 <nav className="ui-win__side" aria-label="Filter by status">
                   {FILTERS.map((f) => (
                     <button
@@ -291,11 +290,10 @@ export default function FleetFrame({
                 </div>
               </div>
             </div>
-          </div>
 
           <div className="app__pane app__pane--open">
             {openMonitor ? (
-              <div key={openMonitor.id} className="ui-panel fleet__open">
+              <div key={openMonitor.id} className="fleet__open">
                 <div className="fleet__pick">
                   <label htmlFor="pick-m">Monitor</label>
                   <select

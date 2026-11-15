@@ -547,7 +547,7 @@ export default function HomeSections({
                 aria-controls="wf-p1 wf-s1"
                 id="wf-t1"
               >
-                Watch in terminal
+                Terminal
               </button>
               <button
                 className="tab"
@@ -558,7 +558,7 @@ export default function HomeSections({
                 id="wf-t2"
                 tabIndex={-1}
               >
-                Query JSON API
+                JSON API
               </button>
               <button
                 className="tab"
@@ -569,7 +569,7 @@ export default function HomeSections({
                 id="wf-t3"
                 tabIndex={-1}
               >
-                Filter in console
+                Console
               </button>
             </div>
 
@@ -1015,7 +1015,7 @@ export default function HomeSections({
               <div className="faq__item">
                 <h3>
                   <img src="/assets/icons/ui-server.svg" alt="" width="18" height="18" />
-                  Does the fleet view show secret URL tokens?
+                  Does the Fleet view show secret URL tokens?
                 </h3>
                 <p>
                   No. Target URLs may hold secret tokens, so the fleet view and monitor header show only the parsed
