@@ -1,11 +1,15 @@
 import FleetHero from "@/components/FleetHero";
 import FleetFrame from "@/components/FleetFrame";
+import HomeSections from "@/components/HomeSections";
 import { getStatus, listChecks, listMonitors } from "@/lib/api";
 import { getPrefs, listAlertRules } from "@/lib/store";
 import type { Check, Monitor } from "@/lib/types";
 
-// The console's first screen: dealt hero (triptych, live monitor cards), the
-// hosts marquee, then the fleet section on the one ground (bg-field).
+export const dynamic = "force-dynamic";
+
+// Screen 1: centred hero with painterly-landscape window.
+// Screen 2: live app-frame fleet ledger.
+// Screens 3-8: check cycle (iris-opens), workflow tabs, liquid-type statement, stack diagram, FAQ.
 export default async function Home({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
   const [statusRes, monitorsRes, { prefs }, { rules }] = await Promise.all([
     getStatus(),
@@ -17,19 +21,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
   const status = statusRes.ok ? statusRes.data : null;
   const monitors = monitorsRes.ok ? monitorsRes.data : [];
 
-  // One page of checks per monitor feeds the hero collage and the latency column.
   const perMonitor = await Promise.all(
     monitors.map(async (m: Monitor) => {
       const r = await listChecks(String(m.id), 1, 14);
       return [m.id, r.ok ? r.data.data : []] as const;
-    })
+    }),
   );
   const checksById = new Map<number, Check[]>(perMonitor);
   const latency = Object.fromEntries(
-    perMonitor.map(([id, checks]) => [id, checks.find((c) => c.latency_ms != null)?.latency_ms ?? null])
+    perMonitor.map(([id, checks]) => [id, checks.find((c) => c.latency_ms != null)?.latency_ms ?? null]),
   );
 
-  // The open pane: the monitor named in ?m=, else the one needing attention first.
   const { m } = await searchParams;
   const rank = { down: 0, degraded: 1, pending: 2, up: 3 } as const;
   const wanted = Number(m);
@@ -46,37 +48,38 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
   return (
     <>
       <FleetHero monitors={monitors} checksById={checksById} status={status} />
-      <section className="section bg-field bg-bleed" id="fleet" aria-labelledby="fleet-h">
+      <section className="section" id="fleet" aria-labelledby="fleet-h">
         <div className="wrap">
           <div className="grid">
             <div className="span-5">
-              <span className="t-label">Fleet</span>
-              <h2 id="fleet-h">Every target, worst first</h2>
-              <p className="t-lead">
-                The list is the check pipeline&apos;s ledger — paused and pending monitors sit in the same table as live
-                ones.
-              </p>
-              <p className="t-small muted" style={{ marginTop: "var(--s-4)" }}>
-                Refreshes every {prefs.refreshSeconds || "—"} s{prefs.refreshSeconds ? "" : " when set"} · hosts shown,
-                never full URLs
-              </p>
+              <h2 id="fleet-h">Monitor uptime, worst first</h2>
             </div>
-            <div className="span-7 start-6">
-              <FleetFrame
-                initial={{
-                  status,
-                  monitors,
-                  latency,
-                  offline: !monitorsRes.ok && !statusRes.ok,
-                }}
-                selected={selected}
-                refreshSeconds={prefs.refreshSeconds}
-                alertRules={rules}
-              />
+            <div className="span-6 start-7">
+              <p className="t-lead muted">
+                Monitors sort worst first beside their 24 h latency and check log. Refreshes every{" "}
+                {prefs.refreshSeconds || "—"} s.
+              </p>
+              <p style={{ marginTop: "var(--s-3)" }}>
+                <a className="link" href="/settings">
+                  Configure alert rules
+                </a>
+              </p>
             </div>
           </div>
+          <FleetFrame
+            initial={{
+              status,
+              monitors,
+              latency,
+              offline: !monitorsRes.ok && !statusRes.ok,
+            }}
+            selected={selected}
+            refreshSeconds={prefs.refreshSeconds}
+            alertRules={rules}
+          />
         </div>
       </section>
+      <HomeSections monitors={monitors} status={status} />
     </>
   );
 }

@@ -8,7 +8,6 @@ import { STATUS_LABEL } from "@/lib/format";
 const REFRESH_CHOICES = [0, 5, 15, 30];
 
 // Console preferences + alert rules — the MongoDB-backed web-layer store.
-// When Mongo is unreachable the route answers degrade and edits are refused.
 export function PrefsPanel({ initial, mongoOk }: { initial: { refreshSeconds: number }; mongoOk: boolean }) {
   const [refresh, setRefresh] = useState(initial.refreshSeconds);
   const [msg, setMsg] = useState("");
@@ -21,12 +20,20 @@ export function PrefsPanel({ initial, mongoOk }: { initial: { refreshSeconds: nu
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ refreshSeconds: v }),
     });
-    setMsg(res.ok ? (v === 0 ? "Live refresh off" : `Refreshing every ${v} s`) : "The store is offline — the change was not kept");
+    setMsg(
+      res.ok
+        ? v === 0
+          ? "Live refresh off"
+          : `Refreshing every ${v} s`
+        : "The store is offline — the change was not kept",
+    );
   }
 
   return (
     <div className="ui-panel" style={{ padding: "var(--s-5)" }}>
-      <h3 className="t-label" style={{ marginBottom: "var(--s-4)" }}>Fleet table refresh</h3>
+      <h2 className="t-label" style={{ marginBottom: "var(--s-4)" }}>
+        Fleet table refresh
+      </h2>
       <div className="btn-row" role="group" aria-label="Refresh interval">
         {REFRESH_CHOICES.map((v) => (
           <button
@@ -40,9 +47,13 @@ export function PrefsPanel({ initial, mongoOk }: { initial: { refreshSeconds: nu
           </button>
         ))}
       </div>
-      {msg ? <p className="t-small muted" role="status" style={{ marginTop: "var(--s-3)" }}>{msg}</p> : null}
+      {msg ? (
+        <p className="t-small muted" role="status" style={{ marginTop: "var(--s-3)" }}>
+          {msg}
+        </p>
+      ) : null}
       {!mongoOk ? (
-        <p className="t-small" role="status" style={{ marginTop: "var(--s-3)", color: "#f2b134" }}>
+        <p className="t-small st-degraded" role="status" style={{ marginTop: "var(--s-3)", color: "var(--st)" }}>
           The web-layer store is unreachable — the console still reads and manages monitors.
         </p>
       ) : null}
@@ -86,57 +97,74 @@ export function RulesPanel({
     if (res.ok) setRules(rules.filter((r) => r._id !== id));
   }
 
-  const nameOf = (id: number | null) => (id === null ? "any monitor" : monitors.find((m) => m.id === id)?.name ?? `#${id}`);
+  const nameOf = (id: number | null) =>
+    id === null ? "any monitor" : (monitors.find((m) => m.id === id)?.name ?? `#${id}`);
 
   return (
     <div className="ui-panel" style={{ padding: "var(--s-5)" }}>
-      <h3 className="t-label" style={{ marginBottom: "var(--s-4)" }}>Alert rules</h3>
+      <h2 className="t-label" style={{ marginBottom: "var(--s-3)" }}>
+        Alert rules
+      </h2>
       <p className="t-small muted" style={{ marginBottom: "var(--s-4)" }}>
-        A status line appears over the fleet table when a monitor becomes the chosen state. Incident email still belongs
-        to the API.
+        A status line appears over the fleet table when a monitor transitions to the chosen state.
       </p>
       <form onSubmit={add} className="form">
-        <div className="form__row">
-          <div className="form__group">
-            <label htmlFor="r-monitor">When</label>
-            <select id="r-monitor" name="monitorId" defaultValue="any">
-              <option value="any">any monitor</option>
-              {monitors.map((m) => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form__group">
-            <label htmlFor="r-event">becomes</label>
-            <select id="r-event" name="event" defaultValue="down">
-              {(["down", "degraded", "up"] as MonitorStatus[]).map((s) => (
-                <option key={s} value={s}>{STATUS_LABEL[s].toLowerCase()}</option>
-              ))}
-            </select>
-          </div>
+        <div className="field">
+          <label htmlFor="r-monitor">Monitor</label>
+          <select id="r-monitor" name="monitorId" defaultValue="any">
+            <option value="any">Any monitor</option>
+            {monitors.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
         </div>
-        <button className="btn btn--primary" type="submit" disabled={!mongoOk}>
-          Add the rule
-          <svg className="m-arrow" viewBox="0 0 12 12" aria-hidden="true">
-            <path className="m-arrow__stem" d="M1 6h8" />
-            <path className="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5" />
-          </svg>
-        </button>
+        <div className="field">
+          <label htmlFor="r-event">Becomes</label>
+          <select id="r-event" name="event" defaultValue="down">
+            {(["down", "degraded", "up"] as MonitorStatus[]).map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABEL[s].toLowerCase()}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="btn-row">
+          <button className="btn btn--primary" type="submit" disabled={!mongoOk}>
+            Add alert rule
+            <svg className="m-arrow" viewBox="0 0 12 12" aria-hidden="true">
+              <path className="m-arrow__stem" d="M1 6h8" />
+              <path className="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5" />
+            </svg>
+          </button>
+        </div>
       </form>
-      {err ? <p className="t-small" role="alert" style={{ color: "#ff4a1f" }}>{err}</p> : null}
+      {err ? (
+        <p className="t-small st-down" role="alert" style={{ color: "var(--st)", marginTop: "var(--s-3)" }}>
+          {err}
+        </p>
+      ) : null}
       {rules.length > 0 ? (
-        <ul style={{ marginTop: "var(--s-4)", display: "grid", gap: "var(--s-2)" }}>
+        <ul className="rulelist">
           {rules.map((r) => (
-            <li key={r._id} className="statline" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span className="t-small">
-                when <b>{nameOf(r.monitorId)}</b> becomes <b className={`st-${r.event}`}>{STATUS_LABEL[r.event].toLowerCase()}</b>
+            <li key={r._id} className="rule">
+              <span>
+                When <b>{nameOf(r.monitorId)}</b> becomes{" "}
+                <b className={`st-${r.event}`} style={{ color: "var(--st)" }}>
+                  {STATUS_LABEL[r.event].toLowerCase()}
+                </b>
               </span>
-              <button className="btn btn--secondary" type="button" onClick={() => remove(r._id!)}>Remove</button>
+              <button className="btn btn--secondary btn--sm" type="button" onClick={() => remove(r._id!)}>
+                Remove
+              </button>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="t-small muted" style={{ marginTop: "var(--s-4)" }}>No rules yet.</p>
+        <p className="t-small muted" style={{ marginTop: "var(--s-4)" }}>
+          No rules yet.
+        </p>
       )}
     </div>
   );

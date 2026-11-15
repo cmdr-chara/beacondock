@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import MonitorForm from "@/components/MonitorForm";
 import { getMonitor } from "@/lib/api";
 
-export const metadata = { title: "Edit a monitor — BeaconDock" };
+export const metadata = { title: "Edit monitor: BeaconDock" };
 
 export default async function EditMonitor({
   params,
@@ -20,12 +20,12 @@ export default async function EditMonitor({
   const monitor = monitorRes.data;
 
   return (
-    <section className="section section--hero bg-topglow" aria-labelledby="edit-h">
+    <section className="section section--hero" aria-labelledby="edit-h">
       <div className="wrap">
         <div className="grid">
           <div className="span-4">
-            <span className="t-label">{monitor.name}</span>
-            <h1 id="edit-h">Change the watch</h1>
+            <span className="t-label muted">{monitor.name}</span>
+            <h1 id="edit-h">Edit monitor</h1>
             <p className="t-lead">
               {monitor.host} · currently {monitor.active ? "checking" : "paused"} every {monitor.interval_seconds}{" "}
               seconds.

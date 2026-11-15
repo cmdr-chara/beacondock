@@ -41,17 +41,26 @@ export function Sparkline({ checks, warnMs }: { checks: Check[]; warnMs?: number
   const H = 90;
   const step = pts.length > 1 ? W / (pts.length - 1) : 0;
   const y = (v: number) => H - 6 - (v / max) * (H - 14);
-  const d = pts.map((c, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${y(c.latency_ms ?? max).toFixed(1)}`).join(" ");
+  const d = pts
+    .map((c, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${y(c.latency_ms ?? max).toFixed(1)}`)
+    .join(" ");
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Latency, latest ${latencyLabel(vals[vals.length - 1])}`}>
       {warnMs ? (
-        <line x1="0" x2={W} y1={y(warnMs)} y2={y(warnMs)} stroke="var(--p-muted)" strokeDasharray="3 4" strokeWidth="1" opacity=".5" />
+        <line
+          x1="0"
+          x2={W}
+          y1={y(warnMs)}
+          y2={y(warnMs)}
+          stroke="var(--p-muted)"
+          strokeDasharray="3 4"
+          strokeWidth="1"
+          opacity=".65"
+        />
       ) : null}
       <path d={d} fill="none" stroke="var(--p-accent)" strokeWidth="1.6" />
       {pts.map((c, i) =>
-        c.status === "down" ? (
-          <circle key={c.id} cx={i * step} cy={y(0) + 4} r="2.4" fill="#ff4a1f" />
-        ) : null
+        c.status === "down" ? <circle key={c.id} cx={i * step} cy={y(0) + 4} r="2.4" fill="#c92a09" /> : null,
       )}
     </svg>
   );

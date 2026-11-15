@@ -1,8 +1,8 @@
 import { PrefsPanel, RulesPanel } from "@/components/SettingsClient";
-import { listMonitors } from "@/lib/api";
+import { apiBaseUrl, apiConfigured, listMonitors } from "@/lib/api";
 import { getPrefs, listAlertRules, mongoOk } from "@/lib/store";
 
-export const metadata = { title: "Console settings — BeaconDock" };
+export const metadata = { title: "Console settings: BeaconDock" };
 export const dynamic = "force-dynamic";
 
 export default async function Settings() {
@@ -15,21 +15,30 @@ export default async function Settings() {
   const monitors = monitorsRes.ok ? monitorsRes.data : [];
 
   return (
-    <section className="section section--hero bg-topglow" aria-labelledby="set-h">
+    <section className="section section--hero" aria-labelledby="set-h">
       <div className="wrap">
         <div className="grid">
           <div className="span-4">
-            <span className="t-label">Console</span>
-            <h1 id="set-h">Settings</h1>
+            <span className="t-label muted">Console</span>
+            <h1 id="set-h">Console settings</h1>
             <p className="t-lead">
-              Web-layer settings live in MongoDB — refresh pacing and the rules that flag status changes in this
-              console. The API keeps its own records; nothing here touches checks or incidents.
+              Web-layer settings live in MongoDB for refresh pacing and browser alert banners. Monitors and checks stay
+              in the Rails API.
             </p>
-            <p className="t-small muted" style={{ marginTop: "var(--s-4)" }}>
-              {ok
-                ? "Store connected."
-                : "Store offline — settings read as defaults and edits are refused until MongoDB is reachable."}
-            </p>
+            <dl className="kv" style={{ marginTop: "var(--s-5)", display: "grid", gap: "var(--s-2)" }}>
+              <div>
+                <dt className="t-small muted">API endpoint</dt>
+                <dd className="mono t-small">{apiBaseUrl()}</dd>
+              </div>
+              <div>
+                <dt className="t-small muted">API key</dt>
+                <dd className="mono t-small">{apiConfigured() ? "configured server-side" : "missing"}</dd>
+              </div>
+              <div>
+                <dt className="t-small muted">MongoDB store</dt>
+                <dd className="mono t-small">{ok ? "connected" : "offline (defaults active)"}</dd>
+              </div>
+            </dl>
           </div>
           <div className="span-7 start-6" style={{ display: "grid", gap: "var(--s-5)", alignContent: "start" }}>
             <PrefsPanel initial={{ refreshSeconds: prefs.refreshSeconds }} mongoOk={ok} />

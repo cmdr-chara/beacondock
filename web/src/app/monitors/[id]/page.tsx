@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import ChecksTable from "@/components/ChecksTable";
 import { DeleteMonitor } from "@/components/MonitorActions";
-import { Sparkline, StatusPill } from "@/components/StatusBits";
+import { Sparkline, StatusPill, UptimeStrip } from "@/components/StatusBits";
 import { getMonitor, listChecks } from "@/lib/api";
 import { intervalLabel, timeAgo, uptimeLabel } from "@/lib/format";
 
-// One monitor: the head (status, cadence, uptime) then check history on the
-// dealt bg-halo ground, newest first.
+export const dynamic = "force-dynamic";
+
 export default async function MonitorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const num = Number(id);
@@ -21,7 +21,7 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <section className="section section--hero bg-topglow" aria-labelledby="m-name">
+      <section className="section section--hero" aria-labelledby="m-name">
         <div className="wrap">
           <div className="grid">
             <div className="span-7">
@@ -31,18 +31,36 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
               </p>
               <h1 id="m-name">{monitor.name}</h1>
               <p className="t-lead">
-                <span className="m-num">{monitor.http_method}</span> {monitor.host} · every{" "}
+                <span className="mono">{monitor.http_method}</span> {monitor.host} · every{" "}
                 {intervalLabel(monitor.interval_seconds)} · expects {monitor.expected_status}
               </p>
+              <div style={{ marginTop: "var(--s-6)", maxWidth: "460px" }}>
+                <p className="t-small muted" style={{ marginBottom: "var(--s-2)" }}>
+                  Recent probe strip
+                </p>
+                <UptimeStrip checks={checks.data} />
+              </div>
             </div>
             <div className="span-5 start-8">
               <dl className="statline">
-                <div><dt>Up 24 h</dt><dd>{uptimeLabel(monitor.uptime_24h)}</dd></div>
-                <div><dt>Up 30 d</dt><dd>{uptimeLabel(monitor.uptime_30d)}</dd></div>
-                <div><dt>Failures in a row</dt><dd>{monitor.consecutive_failures}</dd></div>
-                <div><dt>Last checked</dt><dd>{timeAgo(monitor.last_checked_at)}</dd></div>
+                <div>
+                  <dt>Up 24 h</dt>
+                  <dd>{uptimeLabel(monitor.uptime_24h)}</dd>
+                </div>
+                <div>
+                  <dt>Up 30 d</dt>
+                  <dd>{uptimeLabel(monitor.uptime_30d)}</dd>
+                </div>
+                <div>
+                  <dt>Failures in a row</dt>
+                  <dd>{monitor.consecutive_failures}</dd>
+                </div>
+                <div>
+                  <dt>Last checked</dt>
+                  <dd>{timeAgo(monitor.last_checked_at)}</dd>
+                </div>
               </dl>
-              <div className="btn-row" style={{ marginTop: "var(--s-4)" }}>
+              <div className="btn-row" style={{ marginTop: "var(--s-6)" }}>
                 <a className="btn btn--primary" href={`/monitors/${monitor.id}/edit`}>
                   Edit the monitor
                   <svg className="m-arrow" viewBox="0 0 12 12" aria-hidden="true">
@@ -56,20 +74,19 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </section>
-      <section className="section bg-halo" aria-labelledby="checks-h">
+      <section className="section ground-surface" aria-labelledby="checks-h">
         <div className="wrap">
           <div className="grid">
             <div className="span-4">
-              <span className="t-label">History</span>
+              <span className="t-label muted">History</span>
               <h2 id="checks-h">Checks, newest first</h2>
               <p className="t-lead">
-                Kept 30 days. Two consecutive failures open an incident; a cancelled check is never a healthy
-                observation.
+                Kept 30 days. Two consecutive failures open an incident; a cancelled check never counts as healthy.
               </p>
             </div>
             <div className="span-8 start-5">
               <div className="ui-panel" style={{ padding: "var(--s-5)", marginBottom: "var(--s-5)" }}>
-                <h3 className="t-label" style={{ marginBottom: "var(--s-3)" }}>
+                <h3 className="t-label muted" style={{ marginBottom: "var(--s-3)" }}>
                   Latency · last {Math.min(checks.data.length, 60)} checks
                   {monitor.warn_latency_ms ? ` · degrade above ${monitor.warn_latency_ms} ms` : ""}
                 </h3>

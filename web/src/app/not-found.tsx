@@ -1,11 +1,11 @@
 export default function NotFound() {
   return (
-    <section className="section section--hero bg-topglow">
+    <section className="section section--hero">
       <div className="wrap">
         <p className="hero-notice">404</p>
         <h1>No monitor by that name</h1>
         <p className="t-lead" style={{ marginTop: "var(--s-4)" }}>
-          The fleet lives on the dashboard — the API keeps the records.
+          The fleet lives on the dashboard; the Rails API holds the monitor records.
         </p>
         <div className="btn-row" style={{ marginTop: "var(--s-6)" }}>
           <a className="btn btn--primary" href="/">

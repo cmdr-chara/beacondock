@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "css": "tailwindcss -i src/app/globals.css -o public/assets/app.css --minify",
-    "dev": "next dev -p 3001",
+    "dev": "node -r ./scripts/node27-headers-shim.cjs node_modules/next/dist/bin/next dev -p 3001",
     "build": "next build",
-    "start": "next start -p 3001",
+    "start": "node -r ./scripts/node27-headers-shim.cjs node_modules/next/dist/bin/next start -p 3001",
     "lint": "eslint .",
     "mongo": "node scripts/dev-mongo.mjs",
     "predev": "npm run css",
