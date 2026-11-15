@@ -14,7 +14,6 @@ export function PrefsPanel({ initial, mongoOk }: { initial: { refreshSeconds: nu
 
   async function save(v: number) {
     setRefresh(v);
-    setMsg("");
     const res = await fetch("/api/console/prefs", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -47,11 +46,9 @@ export function PrefsPanel({ initial, mongoOk }: { initial: { refreshSeconds: nu
           </button>
         ))}
       </div>
-      {msg ? (
-        <p className="t-small muted" role="status" style={{ marginTop: "var(--s-3)" }}>
-          {msg}
-        </p>
-      ) : null}
+      <p className="t-small muted" role="status" aria-live="polite" style={{ marginTop: "var(--s-3)", minHeight: "1.25em" }}>
+        {msg || " "}
+      </p>
       {!mongoOk ? (
         <p className="t-small st-degraded" role="status" style={{ marginTop: "var(--s-3)", color: "var(--st)" }}>
           The web-layer store is unreachable — the console still reads and manages monitors.

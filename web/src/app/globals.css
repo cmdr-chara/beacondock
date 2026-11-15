@@ -19,6 +19,22 @@
 
 /* Page CSS: only what the kit lacks. */
 
+/* smooth anchor travel (the kit leaves scroll-behavior: auto; reduced-motion still
+   forces it back to auto via the kit's media query) */
+html { scroll-behavior: smooth; }
+
+/* slim scrollbar in the page palette — a floating ink pill on the page ground */
+html { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--p-ink) 32%, transparent) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--p-ink) 28%, transparent);
+  border: 3px solid var(--p-bg);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--p-ink) 46%, transparent); }
+::-webkit-scrollbar-corner { background: transparent; }
+
 /* anchored sections clear the fixed bar */
 main > :is(.hero, .section) { scroll-margin-top: 84px; }
 
