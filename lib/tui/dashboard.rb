@@ -160,7 +160,7 @@ module Tui
         sub = @pastel.dim(" #{label} ")
         clock = @pastel.dim(" #{Time.current.strftime("%H:%M:%S")} ")
         dashes = content_width - 2 - visible(title) - visible(sub) - visible(clock) - 1
-        "#{@pastel.dim("┌─")}#{title}#{sub}#{@pastel.dim("─" * [ dashes, 0 ].max + "─")}#{clock}#{@pastel.dim("┐")}"
+        "#{@pastel.dim("┌─")}#{title}#{sub}#{@pastel.dim("─" * [ dashes - 1, 0 ].max + "─")}#{clock}#{@pastel.dim("┐")}"
       end
 
       def mid_rule(label)
@@ -334,21 +334,27 @@ module Tui
         Thread.new do
           reader = TTY::Reader.new
           loop { keys << reader.read_keypress }
+        rescue Interrupt
+          keys << "q"
         rescue StandardError
           nil # non-interactive stdin: the dashboard simply ignores keys
         end
         keys
       end
 
+      # TTY::Reader returns raw strings: \e[A-style sequences on Unix,
+      # à-prefixed Win32 scan codes on Windows (see Keys.win_keys).
       KEY_ACTIONS = {
         "q" => :quit, "\u0003" => :quit,
         "r" => :refresh,
         "up" => :up, :up => :up, "\e[A" => :up, "k" => :up,
         "down" => :down, :down => :down, "\e[B" => :down, "j" => :down,
+        "\u00E0H" => :up, "\u00E0P" => :down,
         "enter" => :enter, :enter => :enter, "\r" => :enter, "\n" => :enter,
         "escape" => :back, :escape => :back, "\e" => :back,
         "backspace" => :back, :backspace => :back, "\u007F" => :back, "h" => :back
       }.freeze
+
 
       def wait(seconds, keys)
         deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + seconds
