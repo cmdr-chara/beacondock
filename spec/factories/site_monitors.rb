@@ -9,11 +9,6 @@ FactoryBot.define do
     expected_status { 200 }
     warn_latency_ms { 1500 }
     active { true }
-    public_on_status_page { false }
-
-    trait :public do
-      public_on_status_page { true }
-    end
 
     trait :inactive do
       active { false }

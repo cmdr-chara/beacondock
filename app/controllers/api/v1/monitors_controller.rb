@@ -41,7 +41,7 @@ module Api
 
         def monitor_params
           params.expect(monitor: %i[name url http_method interval_seconds timeout_seconds
-            expected_status warn_latency_ms active public_on_status_page])
+            expected_status warn_latency_ms active])
         end
 
         def monitor_json(monitor)
@@ -56,7 +56,6 @@ module Api
             expected_status: monitor.expected_status,
             warn_latency_ms: monitor.warn_latency_ms,
             active: monitor.active,
-            public_on_status_page: monitor.public_on_status_page,
             last_status: monitor.last_status,
             last_checked_at: monitor.last_checked_at,
             consecutive_failures: monitor.consecutive_failures,

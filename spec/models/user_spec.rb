@@ -25,17 +25,6 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe "#status_page_token" do
-    it "is generated on create" do
-      expect(create(:user).status_page_token).to be_present
-    end
-
-    it "is unique per user" do
-      tokens = create_list(:user, 3).map(&:status_page_token)
-      expect(tokens.uniq.size).to eq(3)
-    end
-  end
-
   describe "associations" do
     it "destroys dependent monitors" do
       user = create(:user)

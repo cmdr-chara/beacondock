@@ -39,11 +39,7 @@ class SiteMonitor < ApplicationRecord
   before_validation :schedule_first_check, on: :create
   before_save :reschedule_when_timing_changes
 
-  after_create_commit :broadcast_card_prepend
-  after_destroy_commit :broadcast_card_remove
-
   scope :active, -> { where(active: true) }
-  scope :publicly_visible, -> { where(public_on_status_page: true) }
   scope :due_for_check, -> { where(next_check_at: ..Time.current).or(where(next_check_at: nil)) }
 
   # Host portion of the URL only — full URLs may embed credentials or tokens
@@ -93,13 +89,5 @@ class SiteMonitor < ApplicationRecord
       if (will_save_change_to_active? && active?) || will_save_change_to_interval_seconds?
         self.next_check_at = Time.current
       end
-    end
-
-    def broadcast_card_prepend
-      broadcast_prepend_to(user, :monitors, target: "monitors")
-    end
-
-    def broadcast_card_remove
-      broadcast_remove_to(user, :monitors)
     end
 end

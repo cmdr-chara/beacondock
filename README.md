@@ -6,9 +6,9 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 Self-hosted uptime monitoring — the **Rails sibling** of [PulseDock](https://github.com/cmdr-chara/pulsedock) (Go).
-It periodically checks HTTP endpoints, records observations, opens/resolves
-incidents, updates a live dashboard over Turbo Streams, and serves public
-status pages plus a JSON REST API.
+It periodically checks HTTP endpoints, records observations and opens/resolves
+incidents. There is **no web UI**: you drive it through the JSON REST API or the
+interactive terminal dashboard (`bin/beacondock`).
 
 [English](#-english) · [Italiano](#-italiano)
 
@@ -19,12 +19,10 @@ status pages plus a JSON REST API.
 ### Features
 
 - **Monitor CRUD** — name, URL, GET/HEAD, interval (30s–1h), timeout (1–30s), expected HTTP status, degraded-latency threshold.
-- **Check pipeline** — `ScheduleChecksJob` sweeps every 30s → one `CheckMonitorJob` per due monitor → `HttpCheckService` (bounded timeouts, ≤3 redirects, TLS verify) → `MonitorStatusService` persists the check, updates roll-up state, manages incidents, and broadcasts the card via Turbo/Solid Cable.
+- **Check pipeline** — `ScheduleChecksJob` sweeps every 30s → one `CheckMonitorJob` per due monitor → `HttpCheckService` (bounded timeouts, ≤3 redirects, TLS verify) → `MonitorStatusService` persists the check, updates roll-up state, manages incidents.
 - **PulseDock-compatible status semantics** — `pending → up / down / degraded`. A failed or timed-out check is *never* a healthy observation. Incidents open only after **2 consecutive** `down` results (flap protection) and auto-resolve on recovery. `degraded` = up but slower than the per-monitor warn threshold (default 1500 ms).
-- **Live dashboard** — dark status-page aesthetic, uptime % (24h/30d), latest latency, inline-SVG sparklines; cards update in real time.
-- **Public status page** — `GET /status/:token`, one unguessable `status_page_token` per user. Only `public_on_status_page` monitors, **host only** (URLs may carry tokens), current status, 24h/30d uptime, last-14-day incidents.
-- **REST API v1** — Bearer API keys (only digests stored), CRUD, paginated check history, status summary, uniform error envelope.
-- **Bilingual UI** — English + Italian via `?locale=` (remembered in a cookie).
+- **Interactive TUI** — boxed ratatui-style dashboard: severity-sorted monitor table, per-monitor next-check countdown, 30-day uptime strip, incident log; arrow keys + Enter open a detail view with latency stats and recent checks.
+- **REST API v1** — Bearer API keys (only SHA-256 digests stored), CRUD, paginated check history, status summary, uniform error envelope.
 - **Retention** — checks older than 30 days pruned daily (`PruneOldChecksJob`, or `bin/rails checks:prune`).
 
 ### Architecture
@@ -45,14 +43,14 @@ status pages plus a JSON REST API.
                                                       │ · updates Monitor   │
                                                       │ · opens/resolves    │
                                                       │   Incident (≥2 downs)│
-                                                      │ · broadcasts card   │
-                                                      └──────────┬──────────┘
-                                                                 ▼
-                                            Turbo Streams (Solid Cable) → dashboard cards
+                                                      └─────────────────────┘
+┌───────────────┐                                  ┌──────────────┐
+│ REST API (:3000/api/v1)        same SQLite DB    │ TUI (bin/beacondock) │
+└───────────────┘                                  └──────────────┘
 ```
 
-Stack: Rails 8.1 · Ruby 4.0 · SQLite (primary/queue/cable) · Solid Queue +
-Recurring · Solid Cable · Propshaft + importmap · Hotwire · RSpec.
+Stack: Rails 8.1 (API-only) · Ruby 4.0 · SQLite (primary + Solid Queue/Cache) ·
+RSpec · `pastel`/`tty-screen`/`tty-reader` for the TUI.
 
 ### Local development
 
@@ -61,45 +59,60 @@ Postgres needed — SQLite everywhere.
 
 ```bash
 bin/setup            # bundle install + db:prepare (+ db:reset with --reset)
-bin/rails db:seed    # demo data (optional but recommended)
-bin/dev              # web (port 3000) + Solid Queue worker
+bin/rails db:seed    # demo fleet + prints a demo API key
+bin/dev              # API server (port 3000) + Solid Queue worker
 ```
 
 `bin/dev` spawns `bin/rails server` and `bin/jobs` (see `Procfile.dev`).
 On Windows the worker runs in `--mode async` automatically (no `fork(2)`).
 
-**Demo credentials** (dev only): `demo@beacondock.dev` / `beacondock-demo`.
-The seed prints the public status page URL and a demo API key.
+There is no browser UI — `bin/rails server` only serves `/api/v1/*` and the `/up`
+health check. Create extra API keys from the console:
+
+```bash
+bin/rails runner 'puts User.first.api_keys.create!(name: "laptop").raw_token'
+```
 
 ### Terminal UI
 
 `bin/beacondock` opens the live monitoring dashboard in your shell — the same
-data the web app renders, refreshed every 5 s. `q` quits, `r` refreshes,
-`--once` prints a single frame (handy for pipes and screenshots).
+database the workers write, refreshed every 5 s.
 
 ```bash
-ruby bin/beacondock
+ruby bin/beacondock          # live, interactive
+ruby bin/beacondock --once   # single frame (pipes, screenshots)
 ```
 
 ```
-beacondock — 5 monitors · all operational · 12:10:51
-
-monitor              method every  status      latency  uptime 30d
-Example.com          GET    300 s  ● up        157 ms   ▇▇▇▇▇▇▇x▇▇ 96.72%
-GitHub               GET    60 s   ● up        254 ms   ▇▇▇▇▇▇▇x▇▇ 94.51%
-...
-! 21:33 Example.com — Check failed
-✓ 21:35 Example.com — resolved after 2m 41s
+┌─ beacondock  7 monitors ──────────────────────────────── 12:45:10 ┐
+│ 1 incident open · next check now                                  │
+├ monitors ─────────────────────────────────────────────────────────┤
+│   monitor            method every next  status    latency uptime     30d │
+│ ▸ staging: billing   GET    1m    now   ✕ down         —  ▇▇▇▇▇▇▇▇▇x 99.72%│
+│   api.github.com     GET    1m    now   ● up       163 ms ▇▇▇▇▇▇▇▇▇▇ 99.86%│
+│   github.com         GET    1m    now   ● up       112 ms ▇▇▇x▇▇▇▇▇▇ 99.86%│
+│   internal: app /up  GET    1m    now   ● up        80 ms ▁▁▇▇▇▇▁▇x▇ 98.89%│
+│   docs (pending)     GET    10m   —     ◌ pending      —  ··········     —│
+├ recent events ────────────────────────────────────────────────────┤
+│ ▲ 11:11 staging: billing — Connection refused                       │
+│ ✓ 14 Nov internal: app /up — resolved after 2h 0m                   │
+└ ↑↓ select · enter detail · r refresh · q quit · live every 5 s ────┘
 ```
+
+Keys: `↑`/`↓` or `j`/`k` select a monitor, `Enter` opens the detail view
+(status, avg/p95/max latency, wide sparkline, uptime 24h/7d/30d, recent
+checks), `Esc`/`h` goes back, `r` refreshes, `q` quits.
 
 The uptime bar is the worst check status per day (up `▇`, degraded `▁`, down
-`x`, no data `·`) — identical to the web status page. Built on `pastel`,
-`tty-screen` and `tty-reader`; renderer lives in `lib/tui/dashboard.rb`.
+`x`, no data `·`). Monitors sort by severity — problems float to the top.
+Rendering is diff-only (no flicker), ANSI is emitted on real TTYs only, and
+Windows scan codes are handled alongside ANSI arrows. Renderer lives in
+`lib/tui/dashboard.rb`.
 
 ### REST API
 
-Auth: `Authorization: Bearer <api-key>` — create keys on the **API keys** page
-(the plaintext token is shown once; only its SHA-256 digest is stored).
+Auth: `Authorization: Bearer <api-key>` — `bin/rails db:seed` prints a demo
+key (the plaintext token is shown once; only its SHA-256 digest is stored).
 Failures use `{ "error": { "code", "message" } }`; collections use `{ "data": [...] }`.
 
 | Endpoint | Description |
@@ -122,14 +135,13 @@ curl -X POST http://localhost:3000/api/v1/monitors \
 ### Testing & quality
 
 ```bash
-bundle exec rspec     # 144 examples: models, services (WebMock), jobs, requests, TUI
+bundle exec rspec     # 99 examples: models, services (WebMock), jobs, API, TUI
 bin/rubocop           # rubocop-rails-omakase — clean
 bin/brakeman          # 0 warnings
 bin/ci                # setup + rubocop + bundler-audit + brakeman + rspec
 ```
 
 HTTP checks are stubbed with WebMock — the suite never hits the network.
-Broadcast assertions verify `Turbo::StreamsChannel.broadcast_replace_to` calls.
 
 ### Deployment
 
@@ -142,10 +154,8 @@ net-ssh/pageant). Recurring tasks need only `bin/jobs` running.
 
 - The model class is **`SiteMonitor`** (table `monitors`): Ruby's stdlib
   `monitor` is loaded by ActiveSupport itself, so `::Monitor` must remain the
-  stdlib class — connection pools, ActionCable and Zeitwerk call `Monitor.new`
-  by name at runtime. `SiteMonitor.model_name` is pinned to `"Monitor"`, so all
-  public contracts (routes, params, `monitor_id`, dom ids, i18n keys) are
-  exactly as if it were named `Monitor`.
+  stdlib class. `SiteMonitor.model_name` is pinned to `"Monitor"`, so public
+  contracts (params `monitor[...]`, `monitor_id`) stay conventional.
 - `ScheduleChecksJob` pushes `next_check_at` forward *before* enqueueing, so
   overlapping sweeps cannot double-schedule a monitor.
 - Error messages never embed exception text (URLs may carry secret tokens);
@@ -156,19 +166,17 @@ net-ssh/pageant). Recurring tasks need only `bin/jobs` running.
 ## 🇮🇹 Italiano
 
 Monitoraggio uptime self-hosted — il **fratello Rails** di PulseDock (Go).
-Controlla periodicamente endpoint HTTP, registra le osservazioni, apre/chiude
-incidenti, aggiorna una dashboard live via Turbo Streams ed espone pagine di
-stato pubbliche più una REST API JSON.
+Controlla periodicamente endpoint HTTP, registra le osservazioni e apre/chiude
+incidenti. **Nessuna UI web**: lo piloti tramite la REST API JSON o la
+dashboard interattiva da terminale (`bin/beacondock`).
 
 ### Funzionalità
 
 - **CRUD dei monitor** — nome, URL, GET/HEAD, intervallo (30s–1h), timeout (1–30s), stato HTTP atteso, soglia di latenza degradata.
-- **Pipeline di controllo** — `ScheduleChecksJob` ogni 30s → un `CheckMonitorJob` per monitor dovuto → `HttpCheckService` (timeout limitati, ≤3 redirect, TLS) → `MonitorStatusService` persiste il check, aggiorna lo stato, gestisce gli incidenti e trasmette la card via Turbo/Solid Cable.
-- **Semantica PulseDock** — `pending → up / down / degraded`. Un check fallito non è mai un'osservazione sana. Gli incidenti si aprono solo dopo **2 fallimenti consecutivi** (anti-flapping) e si risolvono al ripristino. `degraded` = risposta OK ma oltre la soglia di avviso (default 1500 ms).
-- **Dashboard live** — tema scuro, uptime % (24h/30g), ultima latenza, sparkline SVG inline; le card si aggiornano in tempo reale.
-- **Pagina di stato pubblica** — `GET /status/:token`, un token impredicibile per utente. Solo monitor pubblici, **solo host** (gli URL possono contenere token), stato attuale, uptime 24h/30g, incidenti degli ultimi 14 giorni.
-- **REST API v1** — chiavi Bearer (solo il digest è salvato), CRUD, storico check paginato, riepilogo stato, envelope di errore uniforme.
-- **UI bilingue** — Inglese + Italiano via `?locale=` (salvato in un cookie).
+- **Pipeline di controllo** — `ScheduleChecksJob` ogni 30s → un `CheckMonitorJob` per monitor dovuto → `HttpCheckService` (timeout limitati, ≤3 redirect, TLS) → `MonitorStatusService` persiste il check e gestisce gli incidenti.
+- **Semantica PulseDock** — `pending → up / down / degraded`. Un check fallito non è mai un'osservazione sana. Gli incidenti si aprono solo dopo **2 fallimenti consecutivi** (anti-flapping) e si risolvono al ripristino.
+- **TUI interattiva** — dashboard incorniciata stile ratatui: tabella ordinata per severità, countdown per-monitor, striscia uptime 30 giorni, log incidenti; frecce + Invio aprono il dettaglio con statistiche di latenza e ultimi check.
+- **REST API v1** — chiavi Bearer (solo il digest SHA-256 è salvato), CRUD, storico check paginato, riepilogo stato, envelope di errore uniforme.
 - **Retention** — i check oltre 30 giorni eliminati ogni notte (`PruneOldChecksJob` o `bin/rails checks:prune`).
 
 ### Sviluppo locale
@@ -178,30 +186,36 @@ Docker né Postgres — solo SQLite.
 
 ```bash
 bin/setup            # bundle install + db:prepare
-bin/rails db:seed    # dati demo
-bin/dev              # web (porta 3000) + worker Solid Queue
+bin/rails db:seed    # flotta demo + chiave API stampata a schermo
+bin/dev              # server API (porta 3000) + worker Solid Queue
 ```
 
-**Credenziali demo** (solo sviluppo): `demo@beacondock.dev` / `beacondock-demo`.
+Niente interfaccia browser — il server espone solo `/api/v1/*` e l'health
+check `/up`. Chiavi API extra dalla console:
+
+```bash
+bin/rails runner 'puts User.first.api_keys.create!(name: "laptop").raw_token'
+```
 
 ### Interfaccia a terminale (TUI)
 
-`bin/beacondock` apre la dashboard di monitoraggio live nella shell — gli
-stessi dati della web app, aggiornati ogni 5 s. `q` esce, `r` aggiorna,
-`--once` stampa un solo frame (utile per pipe e screenshot).
+`bin/beacondock` apre la dashboard live nella shell — lo stesso database che
+scrivono i worker, aggiornato ogni 5 s.
 
 ```bash
-ruby bin/beacondock
+ruby bin/beacondock          # live, interattiva
+ruby bin/beacondock --once   # un solo frame (pipe, screenshot)
 ```
 
-La barra uptime è il peggior stato del giorno (up `▇`, degradato `▁`, down `x`,
-nessun dato `·`) — identica alla status page web. Basata su `pastel`,
-`tty-screen` e `tty-reader`; il renderer è in `lib/tui/dashboard.rb`.
+Tasti: `↑`/`↓` o `j`/`k` selezionano un monitor, `Invio` apre il dettaglio,
+`Esc`/`h` torna indietro, `r` aggiorna, `q` esce. La barra uptime è il peggior
+stato del giorno (up `▇`, degradato `▁`, down `x`, nessun dato `·`); i problemi
+risalgono in cima alla tabella.
 
 ### API REST
 
-Autenticazione: `Authorization: Bearer <chiave>` — le chiavi si creano nella
-pagina **Chiavi API** (il token in chiaro è mostrato una sola volta).
+Autenticazione: `Authorization: Bearer <chiave>` — `bin/rails db:seed` stampa
+una chiave demo (il token in chiaro è mostrato una sola volta).
 Errori: `{ "error": { "code", "message" } }`.
 
 ```bash
@@ -211,7 +225,7 @@ curl -H "Authorization: Bearer bd_xxx" http://localhost:3000/api/v1/status
 ### Test e qualità
 
 ```bash
-bundle exec rspec     # 144 esempi
+bundle exec rspec     # 99 esempi
 bin/rubocop           # pulito
 bin/brakeman          # 0 avvisi
 bin/ci

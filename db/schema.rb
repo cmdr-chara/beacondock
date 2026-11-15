@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_220400) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_000001) do
   create_table "api_keys", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "name", null: false
@@ -62,7 +62,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_220400) do
     t.integer "last_status", default: 0, null: false
     t.datetime "last_checked_at"
     t.integer "consecutive_failures", default: 0, null: false
-    t.boolean "public_on_status_page", default: false, null: false
     t.datetime "next_check_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -70,28 +69,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_220400) do
     t.index ["user_id"], name: "index_monitors_on_user_id"
   end
 
-  create_table "sessions", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.string "ip_address"
-    t.string "user_agent"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_sessions_on_user_id"
-  end
-
   create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
-    t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "status_page_token"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
-    t.index ["status_page_token"], name: "index_users_on_status_page_token", unique: true
   end
 
   add_foreign_key "api_keys", "users"
   add_foreign_key "checks", "monitors"
   add_foreign_key "incidents", "monitors"
   add_foreign_key "monitors", "users"
-  add_foreign_key "sessions", "users"
 end

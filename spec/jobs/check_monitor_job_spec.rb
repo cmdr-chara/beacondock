@@ -32,12 +32,4 @@ RSpec.describe CheckMonitorJob, type: :job do
       described_class.perform_now(SiteMonitor.maximum(:id).to_i + 999)
     }.not_to raise_error
   end
-
-  it "broadcasts the updated card" do
-    stub_request(:get, "https://example.com/ok").to_return(status: 200)
-
-    expect(Turbo::StreamsChannel).to receive(:broadcast_replace_to)
-      .with(monitor.user, :monitors, hash_including(target: monitor))
-    described_class.perform_now(monitor.id)
-  end
 end

@@ -7,12 +7,7 @@
 
 HISTORY_HOURS = 30 * 24 # one check per hour over 30 days
 
-demo_password = ENV.fetch("SEED_DEMO_PASSWORD", "beacondock-demo")
-user = User.find_or_initialize_by(email_address: "demo@beacondock.dev")
-user.password = demo_password
-user.password_confirmation = demo_password
-user.save!
-user.regenerate_status_page_token if user.status_page_token.blank?
+user = User.find_or_create_by!(email_address: "demo@beacondock.dev")
 
 def seed_monitor(user, attrs)
   monitor = user.monitors.find_or_initialize_by(name: attrs[:name])
@@ -71,7 +66,7 @@ m = ->(minutes) { minutes.minutes.ago }
 
 seed_history(
   seed_monitor(user, name: "github.com", url: "https://github.com",
-                     interval_seconds: 60, public_on_status_page: true, warn_latency_ms: 800),
+                     interval_seconds: 60, warn_latency_ms: 800),
   base_latency: 90,
   outages: [
     { from: h.call(6 * 24 + 3), to: h.call(6 * 24 + 2), cause: "Expected HTTP 200, got 503" }
@@ -79,7 +74,7 @@ seed_history(
 )
 seed_history(
   seed_monitor(user, name: "api.github.com", url: "https://api.github.com",
-                     interval_seconds: 60, public_on_status_page: true, warn_latency_ms: 800),
+                     interval_seconds: 60, warn_latency_ms: 800),
   base_latency: 120,
   outages: [
     { from: h.call(15 * 24 + 8), to: h.call(15 * 24 + 7), cause: "Request timed out" }
@@ -87,7 +82,7 @@ seed_history(
 )
 seed_history(
   seed_monitor(user, name: "status.stripe.com", url: "https://status.stripe.com",
-                     interval_seconds: 120, public_on_status_page: true, warn_latency_ms: 900),
+                     interval_seconds: 120, warn_latency_ms: 900),
   base_latency: 150,
   outages: [
     { from: h.call(9 * 24 + 11), to: h.call(9 * 24 + 10), cause: "Expected HTTP 200, got 502" }
@@ -95,7 +90,7 @@ seed_history(
 )
 seed_history(
   seed_monitor(user, name: "example.com", url: "https://example.com",
-                     interval_seconds: 300, public_on_status_page: true),
+                     interval_seconds: 300),
   base_latency: 70
 )
 seed_history(
@@ -125,5 +120,4 @@ if user.api_keys.none?
   puts "Demo API key (shown once): #{key.raw_token}"
 end
 
-puts "Seeded demo user: demo@beacondock.dev / #{demo_password}"
-puts "Status page: /status/#{user.status_page_token}"
+puts "Seeded demo user: #{user.email_address}"

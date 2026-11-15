@@ -1,6 +1,5 @@
 # Records a check result onto a Monitor: persists the Check row, updates the
-# monitor's roll-up state, opens/resolves incidents (with flap protection) and
-# broadcasts the refreshed dashboard card over Turbo Streams.
+# monitor's roll-up state, opens/resolves incidents (with flap protection).
 #
 # Incidents open only after FAILURE_THRESHOLD consecutive :down results so a
 # single transient failure does not page anyone. A :degraded result is a
@@ -34,8 +33,6 @@ class MonitorStatusService
 
       update_incidents(result, now)
     end
-
-    monitor.broadcast_replace_to(monitor.user, :monitors)
 
     check
   end

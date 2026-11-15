@@ -74,12 +74,4 @@ RSpec.describe MonitorStatusService, type: :service do
       expect(monitor.incidents.ongoing).to be_empty
     end
   end
-
-  describe "broadcasting" do
-    it "broadcasts the refreshed card to the user's monitors stream" do
-      expect(Turbo::StreamsChannel).to receive(:broadcast_replace_to)
-        .with(monitor.user, :monitors, hash_including(target: monitor))
-      described_class.new(monitor).record!(up_result)
-    end
-  end
 end
