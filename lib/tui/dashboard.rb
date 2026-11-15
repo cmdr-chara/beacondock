@@ -13,6 +13,7 @@ module Tui
   class Dashboard
     REFRESH_SECONDS = 5
     BAR_MAX = 30
+    SEVERITY_ORDER = { "down" => 3, "degraded" => 2, "up" => 1 }.freeze
     BAR_MIN = 10
     EVENTS_LIMIT = 6
     NAME_W = 20
@@ -81,7 +82,10 @@ module Tui
     end
 
     def list_frame
+      # Problems float to the top (down > degraded > up > pending), name as
+      # the stable tiebreaker — the k9s-style ordering for a monitor list.
       monitors = SiteMonitor.order(:name).to_a
+        .sort_by { |m| -SEVERITY_ORDER.fetch(m.last_status, 0) }
       @monitors = monitors
       @incident_monitor_ids = Incident.where(resolved_at: nil).pluck(:monitor_id).to_set
       ev = events
@@ -116,6 +120,8 @@ module Tui
         box_line("#{pad(truncate(monitor.name), NAME_W)} #{@pastel.dim("#{monitor.http_method} #{monitor.host}")}"),
         mid_rule("status"),
         box_line(status_line(monitor)),
+        mid_rule("latency"),
+        *latency_lines(monitor),
         mid_rule("uptime"),
         box_line(uptime_line(monitor)),
         box_line(bar_for(monitor)),
@@ -135,6 +141,19 @@ module Tui
         end
         last = monitor.last_checked_at ? "#{format_duration((Time.current - monitor.last_checked_at).to_i)} ago" : "never"
         "#{status} #{@pastel.dim("·")} #{@pastel.dim("last check")} #{last} #{@pastel.dim("·")} #{@pastel.dim("expected")} #{monitor.expected_status} #{@pastel.dim("·")} #{@pastel.dim("every")} #{fmt_interval(monitor.interval_seconds)}"
+      end
+
+      def latency_lines(monitor)
+        values = monitor.recent_latencies(60)
+        return [ box_line(@pastel.dim("no latency data")) ] if values.empty?
+
+        p95 = values.sort[(values.size * 0.95).ceil - 1]
+        stats = "#{@pastel.dim("avg")} #{(values.sum / values.size).round} ms " \
+          "#{@pastel.dim("·")} #{@pastel.dim("p95")} #{p95.round} ms " \
+          "#{@pastel.dim("·")} #{@pastel.dim("max")} #{values.max.round} ms " \
+          "#{@pastel.dim("·")} #{@pastel.dim("warn")} #{monitor.warn_latency_ms} ms"
+        spark = sparkline(values, inner_width - 8)
+        spark ? [ box_line(stats), box_line(@pastel.cyan(spark)) ] : [ box_line(stats) ]
       end
 
       def uptime_line(monitor)
@@ -212,7 +231,7 @@ module Tui
       def inner_width = content_width - 4
 
       def bar_days
-        fixed = NAME_W + 1 + 6 + 1 + 5 + 1 + 11 + 1 + 8 + 1 + 8 + 1
+        fixed = NAME_W + 1 + 6 + 1 + 5 + 1 + 5 + 1 + 11 + 1 + 8 + 1 + 8 + 1
         fixed += TREND_W + 1 if trend?
         (inner_width - fixed).clamp(BAR_MIN, BAR_MAX)
       end
@@ -225,9 +244,10 @@ module Tui
         head = "  " + pad("monitor", NAME_W) + " " +
           pad("method", 6) + " " +
           pad("every", 5) + " " +
+          pad("next", 5) + " " +
           pad("status", 11) + " " +
           rpad("latency", 8) + " " +
-          (trend? ? pad("", TREND_W) + " " : "") +
+          (trend? ? pad("trend", TREND_W) + " " : "") +
           pad("uptime", bar_days) + " " +
           rpad("#{BAR_MAX}d", 8)
         [ @pastel.dim(head), *monitors.map.with_index { |m, i| row(m, !@once && i == @selected) } ]
@@ -267,22 +287,38 @@ module Tui
         "  " + name_cell + " " +
           pad(monitor.http_method, 6) + " " +
           pad(fmt_interval(monitor.interval_seconds), 5) + " " +
+          next_cell(monitor) + " " +
           status + " " +
           latency_cell + " " +
           (trend? ? trend(monitor) + " " : "") +
           bar_for(monitor) + " " + pct_cell
       end
 
+      # Per-monitor countdown to its own scheduled check.
+      def next_cell(monitor)
+        return @pastel.dim(pad("—", 5)) unless monitor.active? && monitor.next_check_at
+
+        seconds = (monitor.next_check_at - Time.current).to_i
+        pad(seconds <= 0 ? "now" : fmt_interval(seconds), 5)
+      end
+
       # Mini sparkline of recent latencies — same data the web detail page
       # charts, in eight block characters.
       def trend(monitor)
-        values = monitor.recent_latencies(TREND_W).last(TREND_W)
-        return @pastel.dim(pad("·" * TREND_W, TREND_W)) if values.size < 2
+        spark = sparkline(monitor.recent_latencies(TREND_W), TREND_W)
+        return @pastel.dim(pad("·" * TREND_W, TREND_W)) if spark.nil?
 
-        max = values.max.to_f
-        max = 1.0 if max.zero?
-        spark = values.map { |v| SPARK[(v / max * (SPARK.size - 1)).round] }.join
         @pastel.cyan(pad(spark, TREND_W))
+      end
+
+      # Block-character sparkline for a series of latencies, oldest first.
+      def sparkline(values, width)
+        vals = values.last(width)
+        return nil if vals.size < 2
+
+        max = vals.max.to_f
+        max = 1.0 if max.zero?
+        vals.map { |v| SPARK[(v / max * (SPARK.size - 1)).round] }.join
       end
 
       # Worst check status per day, oldest first — the same strip the public
@@ -326,7 +362,8 @@ module Tui
           e
         end
         entries.sort_by { |t, _, _| -t.to_i }.first(EVENTS_LIMIT).map do |t, glyph, text|
-          "#{glyph} #{@pastel.dim(t.strftime("%H:%M"))} #{text}"
+          stamp = t.to_date == Date.current ? t.strftime("%H:%M") : t.strftime("%d %b")
+          "#{glyph} #{@pastel.dim(stamp)} #{text}"
         end
       end
 
