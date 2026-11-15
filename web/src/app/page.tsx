@@ -53,7 +53,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
             </div>
             <div className="span-6 start-7">
               <p className="t-lead muted">
-                Live fleet ledger ordered by severity beside 24 h latency and check log. Refreshes every{" "}
+                Endpoints sort by current state beside 24 h uptime, probe strip, and check history. Refreshes every{" "}
                 {prefs.refreshSeconds || "—"} s.
               </p>
               <p style={{ marginTop: "var(--s-3)" }}>

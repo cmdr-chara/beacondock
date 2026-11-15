@@ -73,11 +73,6 @@ export default function FleetHero({
               aria-hidden="true"
             >
               <div className="ui-win__bar">
-                <span className="ui-dots">
-                  <i></i>
-                  <i></i>
-                  <i></i>
-                </span>
                 <span className="ui-win__crumb">
                   BeaconDock <i>/</i> <b>{lead ? lead.name : "Fleet"}</b>
                 </span>
@@ -121,9 +116,7 @@ export default function FleetHero({
                       return (
                         <li key={m.id} className="ui-win__row">
                           <div className="ui-win__hit">
-                            <span className="ui-avatar" data-tone={String((m.id % 5) + 1)}>
-                              {m.name.slice(0, 2).toUpperCase()}
-                            </span>
+                            <span className={`st-dot st-${m.last_status}`} aria-hidden="true" />
                             <span className="ui-win__who">{m.name}</span>
                             <span className="ui-win__sub">
                               {m.host}
@@ -138,9 +131,7 @@ export default function FleetHero({
                     {sorted.length === 0 ? (
                       <li className="ui-win__row">
                         <div className="ui-win__hit">
-                          <span className="ui-avatar" data-tone="4">
-                            BD
-                          </span>
+                          <span className="st-dot st-pending" aria-hidden="true" />
                           <span className="ui-win__who">Connect Rails API</span>
                           <span className="ui-win__sub">localhost:3000/api/v1</span>
                           <span className="ui-win__st st-pending">Pending</span>

@@ -41,23 +41,22 @@ export default async function SiteNav() {
                   <div className="panel" style={{ "--p-h": "200px" } as React.CSSProperties}>
                     <div className="stage stage--fade-br">
                       <div
-                        className="at-corner fit"
-                        style={{ "--ax": "24px", "--ay": "24px", "--fit-max": "380px" } as React.CSSProperties}
+                        className="at-corner"
+                        style={{ "--ax": "24px", "--ay": "24px" } as React.CSSProperties}
                       >
                         <div className="ui ui-panel ui-win ui-win--compact" aria-hidden="true">
                           <div className="ui-win__bar">
-                            <span className="ui-dots"><i></i><i></i><i></i></span>
                             <span className="ui-win__crumb">BeaconDock <i>/</i> <b>Fleet</b></span>
                           </div>
                           <ul className="ui-win__rows">
                             <li className="ui-win__row">
-                              <span className="ui-avatar" data-tone="5">SB</span>
+                              <span className="st-dot st-down" aria-hidden="true" />
                               <span className="ui-win__who">staging: billing</span>
                               <span className="ui-win__sub">127.0.0.1</span>
                               <span className="ui-win__st st-down">Down</span>
                             </li>
                             <li className="ui-win__row">
-                              <span className="ui-avatar" data-tone="3">AG</span>
+                              <span className="st-dot st-up" aria-hidden="true" />
                               <span className="ui-win__who">api.github.com</span>
                               <span className="ui-win__sub">api.github.com</span>
                               <span className="ui-win__st st-up">Up</span>
@@ -67,7 +66,7 @@ export default async function SiteNav() {
                       </div>
                     </div>
                   </div>
-                  <span className="t-card">Fleet ledger</span>
+                  <span className="t-card">Fleet status</span>
                   <span className="t-small muted">{summary}</span>
                 </a>
                 <a className="menu-card span-4" href="/#checks">

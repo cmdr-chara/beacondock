@@ -29,7 +29,7 @@ export default function SiteFooter() {
               <h3>Console</h3>
               <ul>
                 <li>
-                  <a href="/#fleet">Fleet ledger</a>
+                  <a href="/#fleet">Fleet status</a>
                 </li>
                 <li>
                   <a href="/monitors/new">Add a monitor</a>

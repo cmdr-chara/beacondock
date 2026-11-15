@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AlertRule } from "@/lib/store";
 import type { Check, Monitor, MonitorStatus, StatusSummary } from "@/lib/types";
-import { latencyLabel, STATUS_LABEL, timeAgo, uptimeLabel } from "@/lib/format";
+import { intervalLabel, latencyLabel, STATUS_LABEL, timeAgo, uptimeLabel } from "@/lib/format";
 import { Sparkline, StatusPill, UptimeStrip } from "./StatusBits";
 
 type Filter = MonitorStatus | "all";
@@ -15,8 +15,8 @@ interface Fleet {
   offline: boolean;
 }
 
-// The dealt app-frame, live: a `window` pane listing the fleet beside the open
-// monitor's checks. Rows are real links (/?m=id#fleet).
+// Unified two-pane console window: shared bar across both panes, status-dot
+// monitor rows on the left, aligned metrics + check history on the right.
 export default function FleetFrame({
   initial,
   selected,
@@ -121,22 +121,20 @@ export default function FleetFrame({
         </div>
       ) : (
         <div className="ui app fleet">
+          <div className="ui-win__bar app__bar">
+            <span className="ui-win__crumb">
+              BeaconDock <i>/</i> <b>Fleet</b>
+            </span>
+            <span className="ui-spacer"></span>
+            <span className="ui-win__age">
+              {fleet.status
+                ? `${fleet.status.counts.up} up · ${fleet.status.counts.down} down · ${fleet.status.total} total`
+                : "—"}
+            </span>
+          </div>
+
           <div className="app__pane app__pane--list">
             <div className="ui-panel ui-win" data-ui="window">
-              <div className="ui-win__bar">
-                <span className="ui-dots" aria-hidden="true">
-                  <i></i>
-                  <i></i>
-                  <i></i>
-                </span>
-                <span className="ui-win__crumb">
-                  BeaconDock <i>/</i> <b>Fleet</b>
-                </span>
-                <span className="ui-spacer"></span>
-                <span className="ui-win__age">
-                  {fleet.status ? `${fleet.status.counts.up}/${fleet.status.total} up` : "—"}
-                </span>
-              </div>
               <div className="ui-win__body">
                 <nav className="ui-win__side" aria-label="Filter by status">
                   {FILTERS.map((f) => (
@@ -192,9 +190,7 @@ export default function FleetFrame({
                             href={`/?m=${m.id}#fleet`}
                             className={`ui-win__hit${selected?.monitor.id === m.id ? " is-open" : ""}`}
                           >
-                            <span className="ui-avatar" data-tone={String((m.id % 5) + 1)}>
-                              {m.name.slice(0, 2).toUpperCase()}
-                            </span>
+                            <span className={`st-dot st-${m.last_status}`} aria-hidden="true" />
                             <span className="ui-win__who">{m.name}</span>
                             <span className="ui-win__sub">
                               {m.host}
@@ -213,9 +209,10 @@ export default function FleetFrame({
               </div>
             </div>
           </div>
+
           <div className="app__pane app__pane--open">
             {selected ? (
-              <div className="ui-panel fleet__open ui-win--compact">
+              <div className="ui-panel fleet__open">
                 <div className="fleet__pick">
                   <label htmlFor="pick-m">Monitor</label>
                   <select
@@ -232,46 +229,79 @@ export default function FleetFrame({
                     ))}
                   </select>
                 </div>
+
                 <div className="fleet__openhead">
                   <div>
                     <p className="fleet__openname">{selected.monitor.name}</p>
-                    <p className="t-small muted">
-                      {selected.monitor.http_method} {selected.monitor.host} · up{" "}
-                      {uptimeLabel(selected.monitor.uptime_24h)} in 24 h
+                    <p className="t-small muted mono">
+                      {selected.monitor.http_method} {selected.monitor.host} · every{" "}
+                      {intervalLabel(selected.monitor.interval_seconds)}
                     </p>
                   </div>
                   <StatusPill status={selected.monitor.active ? selected.monitor.last_status : "pending"} />
                 </div>
+
+                <dl className="fleet__stats">
+                  <div>
+                    <dt>Up 24 h</dt>
+                    <dd>{uptimeLabel(selected.monitor.uptime_24h)}</dd>
+                  </div>
+                  <div>
+                    <dt>Up 30 d</dt>
+                    <dd>{uptimeLabel(selected.monitor.uptime_30d)}</dd>
+                  </div>
+                  <div>
+                    <dt>Expected</dt>
+                    <dd>HTTP {selected.monitor.expected_status}</dd>
+                  </div>
+                  <div>
+                    <dt>{selected.monitor.consecutive_failures > 0 ? "Fail streak" : "Warn above"}</dt>
+                    <dd>
+                      {selected.monitor.consecutive_failures > 0
+                        ? `${selected.monitor.consecutive_failures} in a row`
+                        : selected.monitor.warn_latency_ms
+                          ? `${selected.monitor.warn_latency_ms} ms`
+                          : "off"}
+                    </dd>
+                  </div>
+                </dl>
+
                 {selected.checks.some((c) => c.latency_ms != null) ? (
                   <Sparkline checks={selected.checks} warnMs={selected.monitor.warn_latency_ms} />
                 ) : (
                   <div className="fleet__strip">
-                    <span className="t-small muted">Latest checks</span>
+                    <div className="fleet__striphead">
+                      <span className="t-small muted">Probe strip</span>
+                      <span className="t-small muted mono">
+                        last {Math.min(selected.checks.length, 40)} checks
+                      </span>
+                    </div>
                     <UptimeStrip checks={selected.checks} />
                   </div>
                 )}
-                <ul className="ui-win__rows fleet__checks">
+
+                <ul className="fleet__checks">
                   {selected.checks.slice(0, 5).map((c) => (
-                    <li key={c.id} className="ui-win__row" data-row>
-                      <span className="chk-av" aria-hidden="true">
-                        <i className={`st-dot st-${c.status}`} />
-                      </span>
-                      <span className="ui-win__who">
+                    <li key={c.id} className="fleet__checkrow">
+                      <span className={`st-dot st-${c.status}`} aria-hidden="true" />
+                      <time dateTime={c.checked_at}>
                         {new Date(c.checked_at).toLocaleTimeString("en-GB", { hour12: false, timeZone: "UTC" })}
-                      </span>
-                      <span className="ui-win__sub">
+                      </time>
+                      <span className="fleet__checkmsg">
                         {c.error ?? (c.http_status ? `HTTP ${c.http_status}` : "no reply")}
-                        {c.latency_ms != null ? ` · ${latencyLabel(c.latency_ms)}` : ""}
                       </span>
-                      <span className={`ui-win__st st-${c.status}`}>{STATUS_LABEL[c.status]}</span>
+                      <span className={`fleet__checkval st-${c.status}`} style={{ color: "var(--st)" }}>
+                        {c.latency_ms != null ? latencyLabel(c.latency_ms) : STATUS_LABEL[c.status]}
+                      </span>
                     </li>
                   ))}
                 </ul>
-                <div className="btn-row">
-                  <a className="btn btn--secondary btn--sm" href={`/monitors/${selected.monitor.id}`}>
-                    Open the monitor
+
+                <div className="fleet__foot">
+                  <a className="link" href={`/monitors/${selected.monitor.id}`}>
+                    Check history
                   </a>
-                  <a className="btn btn--secondary btn--sm" href={`/monitors/${selected.monitor.id}/edit`}>
+                  <a className="link" href={`/monitors/${selected.monitor.id}/edit`}>
                     Edit monitor
                   </a>
                 </div>

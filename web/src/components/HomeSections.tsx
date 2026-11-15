@@ -1015,10 +1015,10 @@ export default function HomeSections({
               <div className="faq__item">
                 <h3>
                   <img src="/assets/icons/ui-server.svg" alt="" width="18" height="18" />
-                  Does the API show full monitor URLs?
+                  Are secret URL query tokens shown on the dashboard?
                 </h3>
                 <p>
-                  No. Target URLs may hold secret tokens, so the fleet ledger and monitor header show only the parsed
+                  No. Target URLs may hold secret tokens, so the fleet view and monitor header show only the parsed
                   host name; full URLs appear only in the edit form.
                 </p>
               </div>
