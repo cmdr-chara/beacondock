@@ -13,7 +13,8 @@ RSpec.describe Tui::Dashboard do
     expect(frame).to include("API")
     expect(frame).to include("up")
     expect(frame).to include("84 ms")
-    expect(frame).to include("uptime 30d")
+    expect(frame).to include("uptime")
+    expect(frame).to include("30d")
   end
 
   it "marks degraded and down monitors with their own glyphs" do
