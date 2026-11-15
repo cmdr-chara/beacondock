@@ -31,12 +31,65 @@ export default function FleetFrame({
   const [fleet, setFleet] = useState<Fleet>(initial);
   const [filter, setFilter] = useState<Filter>("all");
   const [banner, setBanner] = useState<{ id: number; text: string; tone: MonitorStatus }[]>([]);
+  const [openId, setOpenId] = useState<number | null>(selected?.monitor.id ?? null);
+  const [openChecks, setOpenChecks] = useState<Check[]>(selected?.checks ?? []);
   const prevStatus = useRef<Map<number, MonitorStatus>>(new Map(initial.monitors.map((m) => [m.id, m.last_status])));
+  const checksCache = useRef<Map<number, Check[]>>(
+    new Map(selected ? [[selected.monitor.id, selected.checks]] : []),
+  );
+  const openIdRef = useRef<number | null>(openId);
   const seq = useRef(0);
 
   useEffect(() => {
     setFleet(initial);
   }, [initial]);
+
+  useEffect(() => {
+    setOpenId(selected?.monitor.id ?? null);
+    setOpenChecks(selected?.checks ?? []);
+    if (selected) checksCache.current.set(selected.monitor.id, selected.checks);
+  }, [selected]);
+
+  const loadChecks = useCallback(async (id: number) => {
+    const hit = checksCache.current.get(id);
+    if (hit) {
+      setOpenChecks(hit);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/console/monitors/${id}/checks?per_page=40`, { cache: "no-store" });
+      if (!res.ok) return;
+      const page = await res.json();
+      const list: Check[] = Array.isArray(page?.data) ? page.data : [];
+      checksCache.current.set(id, list);
+      if (openIdRef.current === id) setOpenChecks(list);
+    } catch {
+      /* the pane keeps its previous checks until the next pick or poll */
+    }
+  }, []);
+
+  const pick = useCallback(
+    (id: number) => {
+      openIdRef.current = id;
+      setOpenId(id);
+      history.pushState(null, "", `/?m=${id}#fleet`);
+      loadChecks(id);
+    },
+    [loadChecks],
+  );
+
+  useEffect(() => {
+    const onPop = () => {
+      const v = Number(new URLSearchParams(location.search).get("m"));
+      if (Number.isInteger(v) && v > 0) {
+        openIdRef.current = v;
+        setOpenId(v);
+        loadChecks(v);
+      }
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [loadChecks]);
 
   const poll = useCallback(async () => {
     try {
@@ -44,6 +97,20 @@ export default function FleetFrame({
       if (!res.ok) return;
       const next: Fleet = await res.json();
       setFleet(next);
+      const oid = openIdRef.current;
+      if (oid) {
+        checksCache.current.delete(oid);
+        fetch(`/api/console/monitors/${oid}/checks?per_page=40`, { cache: "no-store" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((page) => {
+            const list: Check[] | null = Array.isArray(page?.data) ? page.data : null;
+            if (list) {
+              checksCache.current.set(oid, list);
+              if (openIdRef.current === oid) setOpenChecks(list);
+            }
+          })
+          .catch(() => {});
+      }
       for (const m of next.monitors) {
         const was = prevStatus.current.get(m.id);
         if (was && was !== m.last_status) {
@@ -94,6 +161,8 @@ export default function FleetFrame({
     { id: "pending", label: "Pending" },
     { id: "up", label: "Up" },
   ];
+
+  const openMonitor = fleet.monitors.find((m) => m.id === openId) ?? null;
 
   return (
     <>
@@ -188,7 +257,12 @@ export default function FleetFrame({
                         <li key={m.id} className="ui-win__row" data-row>
                           <a
                             href={`/?m=${m.id}#fleet`}
-                            className={`ui-win__hit${selected?.monitor.id === m.id ? " is-open" : ""}`}
+                            className={`ui-win__hit${openId === m.id ? " is-open" : ""}`}
+                            onClick={(e) => {
+                              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                              e.preventDefault();
+                              pick(m.id);
+                            }}
                           >
                             <span className={`st-dot st-${m.last_status}`} aria-hidden="true" />
                             <span className="ui-win__who">{m.name}</span>
@@ -211,16 +285,14 @@ export default function FleetFrame({
           </div>
 
           <div className="app__pane app__pane--open">
-            {selected ? (
+            {openMonitor ? (
               <div className="ui-panel fleet__open">
                 <div className="fleet__pick">
                   <label htmlFor="pick-m">Monitor</label>
                   <select
                     id="pick-m"
-                    defaultValue={selected.monitor.id}
-                    onChange={(e) => {
-                      location.href = `/?m=${e.currentTarget.value}#fleet`;
-                    }}
+                    value={openMonitor.id}
+                    onChange={(e) => pick(Number(e.currentTarget.value))}
                   >
                     {fleet.monitors.map((m) => (
                       <option key={m.id} value={m.id}>
@@ -232,56 +304,56 @@ export default function FleetFrame({
 
                 <div className="fleet__openhead">
                   <div>
-                    <p className="fleet__openname">{selected.monitor.name}</p>
+                    <p className="fleet__openname">{openMonitor.name}</p>
                     <p className="t-small muted mono">
-                      {selected.monitor.http_method} {selected.monitor.host} · every{" "}
-                      {intervalLabel(selected.monitor.interval_seconds)}
+                      {openMonitor.http_method} {openMonitor.host} · every{" "}
+                      {intervalLabel(openMonitor.interval_seconds)}
                     </p>
                   </div>
-                  <StatusPill status={selected.monitor.active ? selected.monitor.last_status : "pending"} />
+                  <StatusPill status={openMonitor.active ? openMonitor.last_status : "pending"} />
                 </div>
 
                 <dl className="fleet__stats">
                   <div>
                     <dt>Up 24 h</dt>
-                    <dd>{uptimeLabel(selected.monitor.uptime_24h)}</dd>
+                    <dd>{uptimeLabel(openMonitor.uptime_24h)}</dd>
                   </div>
                   <div>
                     <dt>Up 30 d</dt>
-                    <dd>{uptimeLabel(selected.monitor.uptime_30d)}</dd>
+                    <dd>{uptimeLabel(openMonitor.uptime_30d)}</dd>
                   </div>
                   <div>
                     <dt>Expected</dt>
-                    <dd>HTTP {selected.monitor.expected_status}</dd>
+                    <dd>HTTP {openMonitor.expected_status}</dd>
                   </div>
                   <div>
-                    <dt>{selected.monitor.consecutive_failures > 0 ? "Fail streak" : "Warn above"}</dt>
+                    <dt>{openMonitor.consecutive_failures > 0 ? "Fail streak" : "Warn above"}</dt>
                     <dd>
-                      {selected.monitor.consecutive_failures > 0
-                        ? `${selected.monitor.consecutive_failures} in a row`
-                        : selected.monitor.warn_latency_ms
-                          ? `${selected.monitor.warn_latency_ms} ms`
+                      {openMonitor.consecutive_failures > 0
+                        ? `${openMonitor.consecutive_failures} in a row`
+                        : openMonitor.warn_latency_ms
+                          ? `${openMonitor.warn_latency_ms} ms`
                           : "off"}
                     </dd>
                   </div>
                 </dl>
 
-                {selected.checks.some((c) => c.latency_ms != null) ? (
-                  <Sparkline checks={selected.checks} warnMs={selected.monitor.warn_latency_ms} />
+                {openChecks.some((c) => c.latency_ms != null) ? (
+                  <Sparkline checks={openChecks} warnMs={openMonitor.warn_latency_ms} />
                 ) : (
                   <div className="fleet__strip">
                     <div className="fleet__striphead">
                       <span className="t-small muted">Probe strip</span>
                       <span className="t-small muted mono">
-                        last {Math.min(selected.checks.length, 40)} checks
+                        last {Math.min(openChecks.length, 40)} checks
                       </span>
                     </div>
-                    <UptimeStrip checks={selected.checks} />
+                    <UptimeStrip checks={openChecks} />
                   </div>
                 )}
 
                 <ul className="fleet__checks">
-                  {selected.checks.slice(0, 5).map((c) => (
+                  {openChecks.slice(0, 5).map((c) => (
                     <li key={c.id} className="fleet__checkrow">
                       <span className={`st-dot st-${c.status}`} aria-hidden="true" />
                       <time dateTime={c.checked_at}>
@@ -298,10 +370,10 @@ export default function FleetFrame({
                 </ul>
 
                 <div className="fleet__foot">
-                  <a className="link" href={`/monitors/${selected.monitor.id}`}>
+                  <a className="link" href={`/monitors/${openMonitor.id}`}>
                     Check history
                   </a>
-                  <a className="link" href={`/monitors/${selected.monitor.id}/edit`}>
+                  <a className="link" href={`/monitors/${openMonitor.id}/edit`}>
                     Edit monitor
                   </a>
                 </div>
@@ -314,9 +386,9 @@ export default function FleetFrame({
                   <label htmlFor="pick-any">Monitor</label>
                   <select
                     id="pick-any"
-                    defaultValue=""
+                    value=""
                     onChange={(e) => {
-                      if (e.currentTarget.value) location.href = `/?m=${e.currentTarget.value}#fleet`;
+                      if (e.currentTarget.value) pick(Number(e.currentTarget.value));
                     }}
                   >
                     <option value="" disabled>
