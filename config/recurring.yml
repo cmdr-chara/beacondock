@@ -1,0 +1,23 @@
+# Solid Queue recurring tasks. The dispatcher (part of `bin/jobs`) reads the
+# section matching Rails.env. Common tasks live in a YAML anchor.
+base: &base
+  # Sweep for due monitors every 30 seconds; one CheckMonitorJob is enqueued
+  # per due monitor (see ScheduleChecksJob).
+  schedule_checks:
+    class: ScheduleChecksJob
+    schedule: every 30 seconds
+
+  # Retention: drop Check observations older than 30 days (Check::RETENTION_PERIOD).
+  prune_old_checks:
+    class: PruneOldChecksJob
+    schedule: every day at 3am
+
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+
+development:
+  <<: *base
+
+production:
+  <<: *base

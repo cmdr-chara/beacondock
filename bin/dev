@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+# Starts the dev environment: Puma web server + Solid Queue worker (bin/jobs),
+# matching Procfile.dev. Uses foreman when installed, otherwise spawns both
+# processes directly so the file also works on Windows without foreman.
+
+if system("where foreman >NUL 2>&1") || system("which foreman >/dev/null 2>&1")
+  exec "foreman", "start", "-f", "Procfile.dev", *ARGV
+else
+  pids = [
+    Process.spawn({ "PORT" => ENV.fetch("PORT", "3000") }, "bin/rails server"),
+    Process.spawn("bin/jobs")
+  ]
+
+  trap("INT") { pids.each { |pid| Process.kill("TERM", pid) rescue nil }; exit }
+  trap("TERM") { pids.each { |pid| Process.kill("TERM", pid) rescue nil }; exit }
+
+  # Exit when any child exits.
+  Process.wait(pids.first)
+  pids.each { |pid| Process.kill("TERM", pid) rescue nil }
+end

@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+# BeaconDock terminal UI — the live monitoring dashboard in your shell.
+#
+#   ruby bin/beacondock          live dashboard (q quit · r refresh)
+#   ruby bin/beacondock --once   print a single frame and exit
+#
+require_relative "../config/environment"
+
+if ARGV.include?("--help") || ARGV.include?("-h")
+  puts "usage: ruby bin/beacondock [--once]"
+  puts
+  puts "  --once   render one frame and exit (pipes, screenshots)"
+  puts "  keys     q quit · r refresh"
+  exit
+end
+
+Tui::Dashboard.new(once: ARGV.include?("--once")).run
