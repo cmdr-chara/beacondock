@@ -84,19 +84,25 @@ ruby bin/beacondock --once   # single frame (pipes, screenshots)
 ```
 
 ```
-┌─ beacondock  7 monitors ──────────────────────────────── 12:45:10 ┐
-│ 1 incident open · next check now                                  │
-├ monitors ─────────────────────────────────────────────────────────┤
-│   monitor            method every next  status    latency uptime     30d │
-│ ▸ staging: billing   GET    1m    now   ✕ down         —  ▇▇▇▇▇▇▇▇▇x 99.72%│
-│   api.github.com     GET    1m    now   ● up       163 ms ▇▇▇▇▇▇▇▇▇▇ 99.86%│
-│   github.com         GET    1m    now   ● up       112 ms ▇▇▇x▇▇▇▇▇▇ 99.86%│
-│   internal: app /up  GET    1m    now   ● up        80 ms ▁▁▇▇▇▇▁▇x▇ 98.89%│
-│   docs (pending)     GET    10m   —     ◌ pending      —  ··········     —│
-├ recent events ────────────────────────────────────────────────────┤
-│ ▲ 11:11 staging: billing — Connection refused                       │
-│ ✓ 14 Nov internal: app /up — resolved after 2h 0m                   │
-└ ↑↓ select · enter detail · r refresh · q quit · live every 5 s ────┘
+┌─ beacondock  7 monitors ─────────────────────────────────────────── 16:16:47 ┐
+│ 1 incident open · next check now                                             │
+├ monitors ────────────────────────────────────────────────────────────────────┤
+│   monitor              method every next  status       latency uptime          30d │
+│   staging: billing     GET    1m    now   ✕ down             — ▇▇▇▇▇▇▇▇▇x   99.72% │
+│   api.github.com       GET    1m    now   ● up          163 ms ▇▇▇▇▇▇▇▇▇▇   99.86% │
+│   example.com          GET    5m    now   ● up           73 ms ▇▇▇▇▇▇▇▇▇▇   100.0% │
+│   github.com           GET    1m    now   ● up          112 ms ▇▇▇x▇▇▇▇▇▇   99.86% │
+│   internal: app /up    GET    1m    now   ● up           80 ms ▁▁▇▇▇▇▁▇x▇   98.88% │
+│   status.stripe.com    GET    2m    now   ● up          177 ms x▇▇▇▇▇▇▇▇▇   99.86% │
+│   docs (pending)       GET    10m   —     ◌ pending          — ··········        — │
+├ recent events ───────────────────────────────────────────────────────────────┤
+│ ▲ 11:11 staging: billing — Connection refused                                │
+│ ✓ 14 Nov internal: app /up — resolved after 2h 0m                            │
+│ ! 14 Nov internal: app /up — Request timed out                               │
+│ ✓ 09 Nov github.com — resolved after 1h 0m                                   │
+│ ! 09 Nov github.com — Expected HTTP 200, got 503                             │
+│ ✓ 06 Nov status.stripe.com — resolved after 1h 0m                            │
+└   ↑↓ select · enter detail · r refresh · q quit · live every 5 s ────────────┘
 ```
 
 Keys: `↑`/`↓` or `j`/`k` select a monitor, `Enter` opens the detail view
@@ -123,13 +129,50 @@ Failures use `{ "error": { "code", "message" } }`; collections use `{ "data": [.
 | `GET /api/v1/monitors/:id` | show |
 | `PATCH /api/v1/monitors/:id` | update |
 | `DELETE /api/v1/monitors/:id` | delete (204) |
-| `GET /api/v1/monitors/:id/checks?page=&per_page=` | check history (max 100/page) |
+| `GET /api/v1/monitors/:monitor_id/checks?page=&per_page=` | check history (max 100/page) |
 
 ```bash
 curl -H "Authorization: Bearer bd_xxx" http://localhost:3000/api/v1/status
+```
+
+```json
+{
+  "data": {
+    "total": 7,
+    "active": 7,
+    "counts": { "pending": 1, "up": 5, "down": 1, "degraded": 0 },
+    "open_incidents": 1
+  }
+}
+```
+
+```bash
 curl -X POST http://localhost:3000/api/v1/monitors \
   -H "Authorization: Bearer bd_xxx" -H "Content-Type: application/json" \
   -d '{"monitor": {"name": "Site", "url": "https://example.com", "interval_seconds": 60}}'
+```
+
+### Monitor states
+
+| State | Meaning |
+|---|---|
+| `pending` | created, no check has run yet |
+| `up` | latest checks healthy (expected status, under warn latency) |
+| `degraded` | responding, but slower than `warn_latency_ms` |
+| `down` | last two consecutive checks failed — opens an `Incident` |
+
+### Repository layout
+
+```
+app/
+  controllers/api/v1/   REST endpoints (monitors, checks, status)
+  jobs/                 ScheduleChecksJob · CheckMonitorJob · PruneOldChecksJob
+  models/               User · SiteMonitor · Check · Incident · ApiKey
+  services/             HttpCheckService · MonitorStatusService
+lib/tui/dashboard.rb    interactive terminal dashboard (pure renderer + loop)
+bin/beacondock          TUI entry point        bin/jobs  Solid Queue worker
+db/seeds.rb             30-day realistic demo fleet + incidents
+spec/                   request, job, service, model and TUI specs
 ```
 
 ### Testing & quality
@@ -222,6 +265,16 @@ Errori: `{ "error": { "code", "message" } }`.
 curl -H "Authorization: Bearer bd_xxx" http://localhost:3000/api/v1/status
 ```
 
+```json
+{ "data": { "total": 7, "active": 7,
+  "counts": { "pending": 1, "up": 5, "down": 1, "degraded": 0 },
+  "open_incidents": 1 } }
+```
+
+Stati dei monitor: `pending` (mai controllato), `up`, `degraded` (risponde ma
+oltre `warn_latency_ms`), `down` (2 check falliti consecutivi → apre un
+`Incident`).
+
 ### Test e qualità
 
 ```bash
@@ -238,4 +291,4 @@ per deploy su container Linux — **non testati su questa macchina Windows**.
 
 ### Licenza
 
-MIT — placeholder, vedi [LICENSE](LICENSE).
+MIT — vedi [LICENSE](LICENSE).
