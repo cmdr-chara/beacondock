@@ -17,8 +17,6 @@ module Tui
     BAR_MIN = 10
     EVENTS_LIMIT = 6
     NAME_W = 20
-    TREND_W = 8
-    TREND_MIN_WIDTH = 104
     SPARK = "▁▂▃▄▅▆▇█"
 
     def initialize(io: $stdout, refresh: REFRESH_SECONDS, once: false, color: nil)
@@ -232,11 +230,8 @@ module Tui
 
       def bar_days
         fixed = NAME_W + 1 + 6 + 1 + 5 + 1 + 5 + 1 + 11 + 1 + 8 + 1 + 8 + 1
-        fixed += TREND_W + 1 if trend?
         (inner_width - fixed).clamp(BAR_MIN, BAR_MAX)
       end
-
-      def trend? = inner_width >= TREND_MIN_WIDTH
 
       def table(monitors)
         return [ @pastel.dim(" no monitors yet — add one in the web app") ] if monitors.empty?
@@ -247,7 +242,6 @@ module Tui
           pad("next", 5) + " " +
           pad("status", 11) + " " +
           rpad("latency", 8) + " " +
-          (trend? ? pad("trend", TREND_W) + " " : "") +
           pad("uptime", bar_days) + " " +
           rpad("#{BAR_MAX}d", 8)
         [ @pastel.dim(head), *monitors.map.with_index { |m, i| row(m, !@once && i == @selected) } ]
@@ -290,7 +284,6 @@ module Tui
           next_cell(monitor) + " " +
           status + " " +
           latency_cell + " " +
-          (trend? ? trend(monitor) + " " : "") +
           bar_for(monitor) + " " + pct_cell
       end
 
@@ -300,15 +293,6 @@ module Tui
 
         seconds = (monitor.next_check_at - Time.current).to_i
         pad(seconds <= 0 ? "now" : fmt_interval(seconds), 5)
-      end
-
-      # Mini sparkline of recent latencies — same data the web detail page
-      # charts, in eight block characters.
-      def trend(monitor)
-        spark = sparkline(monitor.recent_latencies(TREND_W), TREND_W)
-        return @pastel.dim(pad("·" * TREND_W, TREND_W)) if spark.nil?
-
-        @pastel.cyan(pad(spark, TREND_W))
       end
 
       # Block-character sparkline for a series of latencies, oldest first.
