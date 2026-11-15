@@ -41,8 +41,8 @@ export default async function SiteNav() {
                   <div className="panel" style={{ "--p-h": "200px" } as React.CSSProperties}>
                     <div className="stage stage--fade-br">
                       <div
-                        className="at-corner"
-                        style={{ "--ax": "24px", "--ay": "24px" } as React.CSSProperties}
+                        className="at-corner fit"
+                        style={{ "--ax": "24px", "--ay": "24px", "--fit-max": "380px" } as React.CSSProperties}
                       >
                         <div className="ui ui-panel ui-win ui-win--compact" aria-hidden="true">
                           <div className="ui-win__bar">
@@ -74,8 +74,8 @@ export default async function SiteNav() {
                   <div className="panel" style={{ "--p-h": "200px" } as React.CSSProperties}>
                     <div className="stage stage--fade-br">
                       <div
-                        className="at-corner"
-                        style={{ "--ax": "24px", "--ay": "24px" } as React.CSSProperties}
+                        className="at-corner fit"
+                        style={{ "--ax": "24px", "--ay": "24px", "--fit-max": "380px" } as React.CSSProperties}
                       >
                         <div className="ui ui-notify" aria-hidden="true">
                           <ul className="ui-notify__list">
@@ -107,8 +107,8 @@ export default async function SiteNav() {
                   <div className="panel" style={{ "--p-h": "200px" } as React.CSSProperties}>
                     <div className="stage stage--fade-br">
                       <div
-                        className="at-corner"
-                        style={{ "--ax": "24px", "--ay": "24px" } as React.CSSProperties}
+                        className="at-corner fit"
+                        style={{ "--ax": "24px", "--ay": "24px", "--fit-max": "380px" } as React.CSSProperties}
                       >
                         <div className="ui ui-panel ui-toggles" aria-hidden="true">
                           <div className="ui-head">
@@ -130,6 +130,13 @@ export default async function SiteNav() {
                                 <span className="ui-tg__sub">Polls /api/console/fleet</span>
                               </span>
                               <span className="ui-switch is-on"><i></i></span>
+                            </li>
+                            <li className="ui-tg">
+                              <span className="ui-tg__text">
+                                <span className="ui-tg__label">Alert on degraded</span>
+                                <span className="ui-tg__sub">Latency above threshold</span>
+                              </span>
+                              <span className="ui-switch"><i></i></span>
                             </li>
                           </ul>
                         </div>

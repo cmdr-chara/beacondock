@@ -6,7 +6,9 @@ export const dynamic = "force-dynamic";
 
 function monitorParams(fd: FormData) {
   const num = (k: string) => {
-    const v = Number(fd.get(k));
+    const raw = fd.get(k);
+    if (raw === null || String(raw).trim() === "") return undefined;
+    const v = Number(raw);
     return Number.isFinite(v) ? v : undefined;
   };
   return {

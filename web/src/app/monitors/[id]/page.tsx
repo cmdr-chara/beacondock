@@ -24,7 +24,7 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
       <section className="section section--hero" aria-labelledby="m-name">
         <div className="wrap">
           <div className="grid">
-            <div className="span-7">
+            <div className="span-7 stack-4">
               <p className="hero-notice">
                 <StatusPill status={monitor.active ? monitor.last_status : "pending"} />
                 {!monitor.active ? <span className="t-small muted"> paused — no checks running</span> : null}
@@ -79,7 +79,7 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
           <div className="grid">
             <div className="span-4">
               <span className="t-label muted">History</span>
-              <h2 id="checks-h">Checks, newest first</h2>
+              <h2 id="checks-h">Check history, newest first</h2>
               <p className="t-lead">
                 Kept 30 days. Two consecutive failures open an incident; a cancelled check never counts as healthy.
               </p>

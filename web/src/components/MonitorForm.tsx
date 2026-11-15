@@ -60,8 +60,12 @@ export default function MonitorForm({ monitor, error }: { monitor?: Monitor; err
           <option value="false">Paused</option>
         </select>
       </div>
-      {error ? <p className="t-small" role="alert" style={{ color: "#ff4a1f" }}>{error}</p> : null}
-      <p className="t-small" data-form-status role="status" />
+      {error ? (
+        <p className="t-small st-down" role="alert" style={{ color: "var(--st)" }}>
+          {error}
+        </p>
+      ) : null}
+      <p className="form__status t-small" data-form-status role="status" />
       <div className="btn-row">
         <button className="btn btn--primary" type="submit">
           {monitor ? "Save the monitor" : "Add the monitor"}

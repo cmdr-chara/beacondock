@@ -23,7 +23,7 @@ export default async function EditMonitor({
     <section className="section section--hero" aria-labelledby="edit-h">
       <div className="wrap">
         <div className="grid">
-          <div className="span-4">
+          <div className="span-5 stack-4">
             <span className="t-label muted">{monitor.name}</span>
             <h1 id="edit-h">Edit monitor</h1>
             <p className="t-lead">
@@ -31,7 +31,7 @@ export default async function EditMonitor({
               seconds.
             </p>
           </div>
-          <div className="span-7 start-6 ui-panel" style={{ padding: "var(--s-5)" }}>
+          <div className="span-6 start-7 ui-panel" style={{ padding: "var(--s-5)" }}>
             <MonitorForm monitor={monitor} error={err} />
           </div>
         </div>

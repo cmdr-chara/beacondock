@@ -37,7 +37,11 @@ export function DeleteMonitor({ id, name }: { id: number; name: string }) {
       <button className="btn btn--secondary" type="button" disabled={busy} onClick={() => setArmed(false)}>
         Keep it
       </button>
-      {err ? <span className="t-small" role="alert" style={{ color: "#ff4a1f" }}>{err}</span> : null}
+      {err ? (
+        <span className="t-small st-down" role="alert" style={{ color: "var(--st)" }}>
+          {err}
+        </span>
+      ) : null}
     </span>
   );
 }

@@ -1,3 +1,4 @@
+import { STATUS_LABEL } from "@/lib/format";
 import type { Monitor, StatusSummary } from "@/lib/types";
 
 const PIPELINE_DIAGRAM = {
@@ -21,280 +22,299 @@ export default function HomeSections({
   status: StatusSummary | null;
 }) {
   const downMon = monitors.find((m) => m.last_status === "down") ?? monitors[0];
-  const upMon = monitors.find((m) => m.last_status === "up") ?? monitors[1];
+  const degradedMon = monitors.find((m) => m.last_status === "degraded") ?? monitors[1];
+  const upMon = monitors.find((m) => m.last_status === "up") ?? monitors[0];
   const upCount = status?.counts.up ?? 5;
+  const searchList = monitors.slice(0, 3);
 
   return (
     <>
-      {/* Screen 3-4: features-2x2 on .ground-surface with iris-opens scroll transition */}
+      {/* features-2x2 on .ground-surface with iris-opens scroll transition */}
       <section
-        className="section g2 ground-surface"
+        className="section ground-surface"
         id="checks"
         data-moment="iris-opens"
         data-moment-opts='{"from":"base"}'
         aria-labelledby="checks-h"
       >
         <div className="wrap">
-          <div className="group">
-            <div className="section-head">
-              <h2 id="checks-h">
-                Every monitor check, four steps.{" "}
-                <span className="muted">Probes, thresholds, incidents, and pruning.</span>
-              </h2>
-            </div>
-            <div className="grid">
-              <article className="card card--row card--open span-6">
-                <h3>Uptime probes on a schedule</h3>
-                <p>
-                  Solid Queue dispatches GET or HEAD checks every 30 s to 1 h with TLS checks and up to three
-                  redirects.
-                </p>
-                <div
-                  className="panel"
-                  data-fx="gradient-mesh"
-                  data-fx-seed="5"
-                  data-fx-palette='{"bg":"#d9ccb7","surface":"#e9e0d2","ink":"#2a2622","muted":"#6f675c","accent":"#a8794a"}'
-                  data-fx-params='{"speed":0,"calm":0.2,"calmX":0.45,"calmY":0.95,"tint":0.6,"relief":0.35}'
-                  style={{ "--calm-k": "0%" } as React.CSSProperties}
-                >
-                <div className="stage stage--fade-b">
-                  <div
-                    className="at-rise fit"
-                    style={{ "--ax": "24px", "--ay": "28px", "--fit-max": "420px" } as React.CSSProperties}
-                    data-ui-loop=""
-                  >
-                      <div className="ui ui-panel ui-pipe" data-ui="pipeline-board">
-                        <div className="ui-pipe__head">
-                          <svg className="ui-icon ui-pipe__branch" viewBox="0 0 16 16" aria-hidden="true">
-                            <circle cx="4.5" cy="3.5" r="1.5" />
-                            <circle cx="4.5" cy="12.5" r="1.5" />
-                            <circle cx="11.5" cy="5" r="1.5" />
-                            <path d="M4.5 5v6M11.5 6.5c0 2.6-2.2 3.6-5.6 4.6" />
-                          </svg>
-                          <span className="ui-pipe__repo">beacondock/worker</span>
-                          <i className="ui-pipe__slash">/</i>
-                          <code className="ui-pipe__ref">main</code>
-                          <span className="ui-pipe__run">#4092</span>
-                          <span className="ui-spacer"></span>
-                          <span className="ui-pipe__total">
-                            <svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true">
-                              <circle cx="8" cy="8.5" r="5.5" />
-                              <path d="M8 5.5v3l2 1.25M6.5 1.75h3" />
-                            </svg>
-                            <span data-pipe-total="">14s</span>
-                          </span>
-                          <span
-                            className="ui-chip ui-chip--ink ui-chip--live ui-pipe__chip"
-                            data-pipe-chip=""
-                            data-done="Passed"
-                          >
-                            Running
-                          </span>
-                        </div>
-                        <div className="ui-pipe__commit">
-                          <span className="ui-avatar" data-tone="4">
-                            SQ
-                          </span>
-                          <span className="ui-pipe__msg">ScheduleChecksJob sweep</span>
-                          <code className="ui-pipe__sha">30s</code>
-                          <button
-                            className="ui-btn ui-btn--ghost ui-btn--sm ui-pipe__btn"
-                            type="button"
-                            tabIndex={-1}
-                            data-pipe-btn=""
-                            data-done="Re-run"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                        <ol className="ui-pipe__steps">
-                          <li className="ui-pipe__step is-done" data-step="schedule">
-                            <span className="ui-pipe__ico">
-                              <svg viewBox="0 0 16 16" aria-hidden="true">
-                                <path d="m4.5 8.2 2.3 2.3 4.7-5" />
-                              </svg>
-                            </span>
-                            <span className="ui-pipe__name">
-                              <span className="ui-pipe__tool" aria-hidden="true">
-                                <img src="/assets/icons/ruby.svg" alt="" />
-                              </span>
-                              <span className="ui-pipe__nm">Schedule</span>
-                            </span>
-                            <code className="ui-pipe__cmd">next_check_at &lt;= now</code>
-                            <span className="ui-pipe__time" data-time="">
-                              1s
-                            </span>
-                            <span className="ui-pipe__bar">
-                              <i></i>
-                            </span>
-                          </li>
-                          <li className="ui-pipe__step is-done" data-step="enqueue">
-                            <span className="ui-pipe__ico">
-                              <svg viewBox="0 0 16 16" aria-hidden="true">
-                                <path d="m4.5 8.2 2.3 2.3 4.7-5" />
-                              </svg>
-                            </span>
-                            <span className="ui-pipe__name">
-                              <span className="ui-pipe__tool" aria-hidden="true">
-                                <img src="/assets/icons/rails.svg" alt="" />
-                              </span>
-                              <span className="ui-pipe__nm">Enqueue</span>
-                            </span>
-                            <code className="ui-pipe__cmd">CheckMonitorJob</code>
-                            <span className="ui-pipe__time" data-time="">
-                              2s
-                            </span>
-                            <span className="ui-pipe__bar">
-                              <i></i>
-                            </span>
-                          </li>
-                          <li
-                            className="ui-pipe__step is-run"
-                            data-step="probe"
-                            style={{ "--k": "0.6" } as React.CSSProperties}
-                          >
-                            <span className="ui-pipe__ico">
-                              <svg viewBox="0 0 16 16" aria-hidden="true">
-                                <path d="m4.5 8.2 2.3 2.3 4.7-5" />
-                              </svg>
-                            </span>
-                            <span className="ui-pipe__name">
-                              <span className="ui-pipe__tool" aria-hidden="true">
-                                <img src="/assets/icons/docker.svg" alt="" />
-                              </span>
-                              <span className="ui-pipe__nm">HTTP probe</span>
-                            </span>
-                            <code className="ui-pipe__cmd">HttpCheckService</code>
-                            <span className="ui-pipe__time" data-time="5s">
-                              3s
-                            </span>
-                            <span className="ui-pipe__bar">
-                              <i></i>
-                            </span>
-                          </li>
-                          <li className="ui-pipe__step" data-step="record">
-                            <span className="ui-pipe__ico">
-                              <svg viewBox="0 0 16 16" aria-hidden="true">
-                                <path d="m4.5 8.2 2.3 2.3 4.7-5" />
-                              </svg>
-                            </span>
-                            <span className="ui-pipe__name">
-                              <span className="ui-pipe__tool" aria-hidden="true">
-                                <img src="/assets/icons/sqlite.svg" alt="" />
-                              </span>
-                              <span className="ui-pipe__nm">Persist</span>
-                            </span>
-                            <code className="ui-pipe__cmd">MonitorStatusService</code>
-                            <span className="ui-pipe__time" data-time="4s">
-                              Queued
-                            </span>
-                            <span className="ui-pipe__bar">
-                              <i></i>
-                            </span>
-                          </li>
-                          <li className="ui-pipe__step" data-step="rollup">
-                            <span className="ui-pipe__ico">
-                              <svg viewBox="0 0 16 16" aria-hidden="true">
-                                <path d="m4.5 8.2 2.3 2.3 4.7-5" />
-                              </svg>
-                            </span>
-                            <span className="ui-pipe__name">
-                              <span className="ui-pipe__tool" aria-hidden="true">
-                                <img src="/assets/icons/github.svg" alt="" />
-                              </span>
-                              <span className="ui-pipe__nm">Rollup</span>
-                            </span>
-                            <code className="ui-pipe__cmd">uptime_24h + 30d</code>
-                            <span className="ui-pipe__time" data-time="2s">
-                              Queued
-                            </span>
-                            <span className="ui-pipe__bar">
-                              <i></i>
-                            </span>
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </article>
-
-              <article className="card card--row card--open span-6">
-                <h3>Incidents while monitoring</h3>
-                <p>
-                  A failed or timed-out check never counts as healthy; two consecutive downs open an incident and
-                  recovery resolves it.
-                </p>
-                <div
-                  className="panel"
-                  data-fx="gradient-mesh"
-                  data-fx-seed="14"
-                  data-fx-palette='{"bg":"#c6d3df","surface":"#d6e0e9","ink":"#25303a","muted":"#5d6873","accent":"#3f6a92"}'
-                  data-fx-params='{"speed":0,"calm":0.15,"calmX":0.4,"calmY":0.95,"tint":0.6,"relief":0.35}'
-                  style={{ "--calm-k": "0%" } as React.CSSProperties}
-                >
-                  <div className="stage stage--fade-b">
-                    <div
-                      className="at-rise fit"
-                      style={
-                        {
-                          "--ax": "32px",
-                          "--ay": "calc(100% - 188px)",
-                          "--ay-sm": "calc(100% - 188px)",
-                          "--fit-max": "380px",
-                        } as React.CSSProperties
-                      }
-                    >
-                      <div className="ui ui-notify" data-ui="notify">
-                        <ul className="ui-notify__list" data-notify-list="">
-                          <li className="ui-note">
-                            <span className="ui-agent ui-note__av" aria-hidden="true"></span>
-                            <span className="ui-note__text">
-                              <span className="ui-note__title">
-                                {downMon ? `${downMon.name} is down` : "Incident opened"}
-                                <time>now</time>
-                              </span>
-                              <span className="ui-note__body">2 consecutive failures on {downMon?.host ?? "127.0.0.1"}</span>
-                            </span>
-                            <span className="ui-btn ui-btn--sm ui-note__btn">Inspect</span>
-                          </li>
-                          <li className="ui-note">
-                            <span className="ui-avatar ui-note__av" data-tone="3">
-                              OK
-                            </span>
-                            <span className="ui-note__text">
-                              <span className="ui-note__title">
-                                {upMon ? `${upMon.name} recovered` : "Incident resolved"}
-                                <time>4m</time>
-                              </span>
-                              <span className="ui-note__body">HTTP 200 answered within warn threshold</span>
-                            </span>
-                          </li>
-                          <li className="ui-note">
-                            <span className="ui-note__ico">
-                              <svg className="ui-icon" viewBox="0 0 16 16">
-                                <path d="m3.5 8.4 2.8 2.8 6.2-6.4" />
-                              </svg>
-                            </span>
-                            <span className="ui-note__text">
-                              <span className="ui-note__title">
-                                {upCount} endpoints healthy<time>12m</time>
-                              </span>
-                              <span className="ui-note__body">All scheduled sweeps completed on time</span>
-                            </span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            </div>
+          <div className="section-head">
+            <h2 id="checks-h">
+              Every check, four steps.{" "}
+              <span className="muted">Probes, thresholds, incidents, and pruning.</span>
+            </h2>
           </div>
 
           <div className="grid">
             <article className="card card--row card--open span-6">
-              <h3>Degraded replies, still monitoring</h3>
+              <h3>Uptime probes on a schedule</h3>
+              <p>
+                Solid Queue dispatches GET or HEAD checks every 30 s to 1 h with TLS checks and up to three redirects.
+              </p>
+              <div
+                className="panel"
+                data-fx="gradient-mesh"
+                data-fx-seed="5"
+                data-fx-palette='{"bg":"#d9ccb7","surface":"#e9e0d2","ink":"#2a2622","muted":"#6f675c","accent":"#a8794a"}'
+                data-fx-params='{"speed":0,"calm":0.2,"calmX":0.45,"calmY":0.95,"tint":0.6,"relief":0.35}'
+                style={{ "--calm-k": "0%" } as React.CSSProperties}
+              >
+                <div className="stage">
+                  <div
+                    className="at-rise fit"
+                    style={
+                      {
+                        "--ax": "24px",
+                        "--ay": "26px",
+                        "--ay-sm": "16px",
+                        "--fit-max": "460px",
+                      } as React.CSSProperties
+                    }
+                    data-ui-loop=""
+                  >
+                    <div className="ui ui-panel ui-pipe" data-ui="pipeline-board">
+                      <div className="ui-pipe__head">
+                        <svg className="ui-icon ui-pipe__branch" viewBox="0 0 16 16" aria-hidden="true">
+                          <circle cx="4.5" cy="3.5" r="1.5" />
+                          <circle cx="4.5" cy="12.5" r="1.5" />
+                          <circle cx="11.5" cy="5" r="1.5" />
+                          <path d="M4.5 5v6M11.5 6.5c0 2.6-2.2 3.6-5.6 4.6" />
+                        </svg>
+                        <span className="ui-pipe__repo">beacondock/worker</span>
+                        <i className="ui-pipe__slash">/</i>
+                        <code className="ui-pipe__ref">main</code>
+                        <span className="ui-pipe__run">#4092</span>
+                        <span className="ui-spacer"></span>
+                        <span className="ui-pipe__total">
+                          <svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true">
+                            <circle cx="8" cy="8.5" r="5.5" />
+                            <path d="M8 5.5v3l2 1.25M6.5 1.75h3" />
+                          </svg>
+                          <span data-pipe-total="">14s</span>
+                        </span>
+                        <span
+                          className="ui-chip ui-chip--ink ui-chip--live ui-pipe__chip"
+                          data-pipe-chip=""
+                          data-done="Passed"
+                        >
+                          Running
+                        </span>
+                      </div>
+                      <div className="ui-pipe__commit">
+                        <span className="ui-avatar" data-tone="4">
+                          SQ
+                        </span>
+                        <span className="ui-pipe__msg">ScheduleChecksJob sweep</span>
+                        <code className="ui-pipe__sha">30s</code>
+                        <button
+                          className="ui-btn ui-btn--ghost ui-btn--sm ui-pipe__btn"
+                          type="button"
+                          tabIndex={-1}
+                          data-pipe-btn=""
+                          data-done="Re-run"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      <ol className="ui-pipe__steps">
+                        <li className="ui-pipe__step is-done" data-step="schedule">
+                          <span className="ui-pipe__ico">
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="m4.5 8.2 2.3 2.3 4.7-5" />
+                            </svg>
+                          </span>
+                          <span className="ui-pipe__name">
+                            <span className="ui-pipe__tool" aria-hidden="true">
+                              <img src="/assets/icons/ruby.svg" alt="" />
+                            </span>
+                            <span className="ui-pipe__nm">Schedule</span>
+                          </span>
+                          <code className="ui-pipe__cmd">next_check_at &lt;= now</code>
+                          <span className="ui-pipe__time" data-time="">
+                            1s
+                          </span>
+                          <span className="ui-pipe__bar">
+                            <i></i>
+                          </span>
+                        </li>
+                        <li className="ui-pipe__step is-done" data-step="enqueue">
+                          <span className="ui-pipe__ico">
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="m4.5 8.2 2.3 2.3 4.7-5" />
+                            </svg>
+                          </span>
+                          <span className="ui-pipe__name">
+                            <span className="ui-pipe__tool" aria-hidden="true">
+                              <img src="/assets/icons/rails.svg" alt="" />
+                            </span>
+                            <span className="ui-pipe__nm">Enqueue</span>
+                          </span>
+                          <code className="ui-pipe__cmd">CheckMonitorJob</code>
+                          <span className="ui-pipe__time" data-time="">
+                            2s
+                          </span>
+                          <span className="ui-pipe__bar">
+                            <i></i>
+                          </span>
+                        </li>
+                        <li
+                          className="ui-pipe__step is-run"
+                          data-step="probe"
+                          style={{ "--k": "0.6" } as React.CSSProperties}
+                        >
+                          <span className="ui-pipe__ico">
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="m4.5 8.2 2.3 2.3 4.7-5" />
+                            </svg>
+                          </span>
+                          <span className="ui-pipe__name">
+                            <span className="ui-pipe__tool" aria-hidden="true">
+                              <img src="/assets/icons/ui-activity.svg" alt="" />
+                            </span>
+                            <span className="ui-pipe__nm">HTTP probe</span>
+                          </span>
+                          <code className="ui-pipe__cmd">HttpCheckService</code>
+                          <span className="ui-pipe__time" data-time="5s">
+                            3s
+                          </span>
+                          <span className="ui-pipe__bar">
+                            <i></i>
+                          </span>
+                        </li>
+                        <li className="ui-pipe__step" data-step="record">
+                          <span className="ui-pipe__ico">
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="m4.5 8.2 2.3 2.3 4.7-5" />
+                            </svg>
+                          </span>
+                          <span className="ui-pipe__name">
+                            <span className="ui-pipe__tool" aria-hidden="true">
+                              <img src="/assets/icons/sqlite.svg" alt="" />
+                            </span>
+                            <span className="ui-pipe__nm">Persist</span>
+                          </span>
+                          <code className="ui-pipe__cmd">MonitorStatusService</code>
+                          <span className="ui-pipe__time" data-time="4s">
+                            Queued
+                          </span>
+                          <span className="ui-pipe__bar">
+                            <i></i>
+                          </span>
+                        </li>
+                        <li className="ui-pipe__step" data-step="rollup">
+                          <span className="ui-pipe__ico">
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="m4.5 8.2 2.3 2.3 4.7-5" />
+                            </svg>
+                          </span>
+                          <span className="ui-pipe__name">
+                            <span className="ui-pipe__tool" aria-hidden="true">
+                              <img src="/assets/icons/github.svg" alt="" />
+                            </span>
+                            <span className="ui-pipe__nm">Rollup</span>
+                          </span>
+                          <code className="ui-pipe__cmd">uptime_24h + 30d</code>
+                          <span className="ui-pipe__time" data-time="2s">
+                            Queued
+                          </span>
+                          <span className="ui-pipe__bar">
+                            <i></i>
+                          </span>
+                        </li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article className="card card--row card--open span-6">
+              <h3>Incidents while monitoring</h3>
+              <p>
+                A failed or timed-out check never counts as healthy; two consecutive downs open an incident and recovery
+                resolves it.
+              </p>
+              <div
+                className="panel"
+                data-fx="gradient-mesh"
+                data-fx-seed="14"
+                data-fx-palette='{"bg":"#c6d3df","surface":"#d6e0e9","ink":"#25303a","muted":"#5d6873","accent":"#3f6a92"}'
+                data-fx-params='{"speed":0,"calm":0.15,"calmX":0.4,"calmY":0.95,"tint":0.6,"relief":0.35}'
+                style={{ "--calm-k": "0%" } as React.CSSProperties}
+              >
+                <div className="stage stage--fade-b">
+                  <div
+                    className="at-rise fit"
+                    style={
+                      {
+                        "--ax": "32px",
+                        "--ay": "36px",
+                        "--ay-sm": "24px",
+                        "--fit-max": "400px",
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div className="ui ui-notify" data-ui="notify">
+                      <ul className="ui-notify__list" data-notify-list="">
+                        <li className="ui-note">
+                          <span className="ui-agent ui-note__av" aria-hidden="true"></span>
+                          <span className="ui-note__text">
+                            <span className="ui-note__title">
+                              {downMon ? `${downMon.name} is down` : "Incident opened"}
+                              <time>now</time>
+                            </span>
+                            <span className="ui-note__body">
+                              2 consecutive failures on {downMon?.host ?? "127.0.0.1"}
+                            </span>
+                          </span>
+                          <span className="ui-btn ui-btn--sm ui-note__btn">Inspect</span>
+                        </li>
+                        <li className="ui-note">
+                          <span className="ui-avatar ui-note__av" data-tone="3">
+                            OK
+                          </span>
+                          <span className="ui-note__text">
+                            <span className="ui-note__title">
+                              {upMon ? `${upMon.name} recovered` : "Incident resolved"}
+                              <time>4m</time>
+                            </span>
+                            <span className="ui-note__body">HTTP 200 answered within warn threshold</span>
+                          </span>
+                        </li>
+                        <li className="ui-note">
+                          <span className="ui-avatar ui-note__av" data-tone="1">
+                            MS
+                          </span>
+                          <span className="ui-note__text">
+                            <span className="ui-note__title">
+                              {degradedMon ? `${degradedMon.name} latency check` : "Slow reply flagged"}
+                              <time>9m</time>
+                            </span>
+                            <span className="ui-note__body">Warn threshold monitored on every sweep</span>
+                          </span>
+                        </li>
+                        <li className="ui-note">
+                          <span className="ui-note__ico">
+                            <svg className="ui-icon" viewBox="0 0 16 16">
+                              <path d="m3.5 8.4 2.8 2.8 6.2-6.4" />
+                            </svg>
+                          </span>
+                          <span className="ui-note__text">
+                            <span className="ui-note__title">
+                              {upCount} endpoints healthy<time>12m</time>
+                            </span>
+                            <span className="ui-note__body">All scheduled sweeps completed on time</span>
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article className="card card--row card--open span-6">
+              <h3>Degraded responses, still monitoring</h3>
               <p>
                 Each monitor compares response latency against its warn threshold in milliseconds before marking the
                 endpoint up.
@@ -309,8 +329,15 @@ export default function HomeSections({
               >
                 <div className="stage stage--fade-b">
                   <div
-                    className="at-right"
-                    style={{ "--ax": "32px", "--ay": "44px" } as React.CSSProperties}
+                    className="at-corner fit"
+                    style={
+                      {
+                        "--ax": "32px",
+                        "--ay": "32px",
+                        "--ay-sm": "24px",
+                        "--fit-max": "420px",
+                      } as React.CSSProperties
+                    }
                   >
                     <div className="ui ui-panel ui-toggles" data-ui="toggles">
                       <div className="ui-head">
@@ -357,7 +384,7 @@ export default function HomeSections({
                         </li>
                         <li className="ui-tg">
                           <span className="ui-tg__text">
-                            <span className="ui-tg__label">Flag replies above 800 ms</span>
+                            <span className="ui-tg__label">Flag responses above 800 ms</span>
                             <span className="ui-tg__sub">Marks monitor degraded, not up</span>
                           </span>
                           <button
@@ -365,7 +392,7 @@ export default function HomeSections({
                             type="button"
                             role="switch"
                             aria-checked="true"
-                            aria-label="Flag replies above 800 ms"
+                            aria-label="Flag responses above 800 ms"
                           >
                             <i></i>
                           </button>
@@ -424,11 +451,20 @@ export default function HomeSections({
                 <div className="stage stage--fade-b">
                   <div
                     className="at-rise fit to-edge"
-                    style={{ "--ax": "32px", "--ay": "36px", "--fit-max": "420px" } as React.CSSProperties}
+                    style={
+                      {
+                        "--ax": "32px",
+                        "--ay": "32px",
+                        "--ay-sm": "24px",
+                        "--fit-max": "420px",
+                        "--cut": "24px",
+                      } as React.CSSProperties
+                    }
                   >
                     <div
-                      className="ui ui-panel ui-stat"
+                      className="ui ui-panel ui-stat is-fill"
                       data-ui="stat"
+                      data-ui-opts='{"fill":true}'
                       data-from="96"
                       data-to="112"
                       data-suffix=" ms"
@@ -448,7 +484,9 @@ export default function HomeSections({
                             112 ms
                           </span>
                           <span className="ui-chip ui-chip--plain ui-stat__delta">30 d retention</span>
-                          <span className="ui-stat__sub">api.github.com · GET</span>
+                          <span className="ui-stat__sub">
+                            {upMon ? `${upMon.host} · ${upMon.http_method}` : "api.github.com · GET"}
+                          </span>
                         </div>
                       </div>
                       <div className="ui-stat__chart">
@@ -492,9 +530,9 @@ export default function HomeSections({
         </div>
       </section>
 
-      {/* Screen 5: tabs-tour (calm section between Beat 2 and Beat 3) */}
+      {/* tabs-tour */}
       <section className="section" id="workflow" aria-labelledby="workflow-h">
-        <div className="wrap grid grid--top fill">
+        <div className="wrap grid grid--top">
           <div className="span-5">
             <div className="section-head">
               <h2 id="workflow-h">Monitors in terminal, API, and console</h2>
@@ -573,13 +611,13 @@ export default function HomeSections({
           </div>
 
           <div
-            className="frame frame--split frame--lit frame--fill span-6 start-7"
+            className="frame frame--split span-6 start-7"
             data-fx="gradient-mesh"
             data-fx-seed="9"
-            data-fx-palette='{"bg":"#eef2f8","surface":"#f6f8fc","ink":"#111111","muted":"#4f4f4f","accent":"#1a4be0"}'
-            data-fx-params='{"speed":0,"calm":0.1,"calmX":0.5,"calmY":0.9,"tint":0.35,"relief":0.2}'
+            data-fx-palette='{"bg":"#c6d3df","surface":"#d6e0e9","ink":"#25303a","muted":"#5d6873","accent":"#3f6a92"}'
+            data-fx-params='{"speed":0,"calm":0.2,"calmX":0.5,"calmY":0.5,"tint":0.45,"relief":0.2}'
           >
-            <div className="stage stage--fade-b">
+            <div className="stage">
               <div
                 id="wf-s1"
                 className="at-rise fit"
@@ -588,6 +626,7 @@ export default function HomeSections({
                     "--fit-max": "460px",
                     "--ax": "max(24px, 50% - 230px)",
                     "--ay": "40px",
+                    "--ay-sm": "24px",
                   } as React.CSSProperties
                 }
               >
@@ -617,7 +656,7 @@ export default function HomeSections({
                           <i></i>
                         </span>
                         <span className="ui-term__count" data-term-count="">
-                          4 of 4 monitors
+                          6 of 6 monitors
                         </span>
                       </div>
                       <div className="ui-term__ln ui-term__log" data-term-out="" data-term-step="">
@@ -640,6 +679,14 @@ export default function HomeSections({
                         <svg className="ui-term__tick" viewBox="0 0 16 16" aria-hidden="true">
                           <path d="m3.5 8.4 2.8 2.8 6.2-6.4" />
                         </svg>
+                        <span className="ui-term__path">duckduckgo</span>
+                        <span className="ui-term__n">up</span>
+                        <span className="ui-term__t">142ms</span>
+                      </div>
+                      <div className="ui-term__ln ui-term__log" data-term-out="" data-term-step="">
+                        <svg className="ui-term__tick" viewBox="0 0 16 16" aria-hidden="true">
+                          <path d="m3.5 8.4 2.8 2.8 6.2-6.4" />
+                        </svg>
                         <span className="ui-term__path">github.com</span>
                         <span className="ui-term__n">up</span>
                         <span className="ui-term__t">112ms</span>
@@ -651,6 +698,14 @@ export default function HomeSections({
                         <span className="ui-term__path">internal: app /up</span>
                         <span className="ui-term__n">up</span>
                         <span className="ui-term__t">80ms</span>
+                      </div>
+                      <div className="ui-term__ln ui-term__log" data-term-out="" data-term-step="">
+                        <svg className="ui-term__tick" viewBox="0 0 16 16" aria-hidden="true">
+                          <path d="m3.5 8.4 2.8 2.8 6.2-6.4" />
+                        </svg>
+                        <span className="ui-term__path">status.stripe.com</span>
+                        <span className="ui-term__n">up</span>
+                        <span className="ui-term__t">94ms</span>
                       </div>
                       <div className="ui-term__ln ui-term__gap" data-term-out="" aria-hidden="true"></div>
                       <div className="ui-term__ln ui-term__done" data-term-out="" data-term-done="">
@@ -681,57 +736,57 @@ export default function HomeSections({
                   {
                     "--fit-max": "440px",
                     "--ax": "max(24px, 50% - 220px)",
-                    "--ay": "40px",
+                    "--ay": "52px",
+                    "--ay-sm": "24px",
                   } as React.CSSProperties
                 }
               >
                 <div className="ui ui-panel ui-code" data-ui="code">
                   <div className="ui-code__tabs">
                     <span className="ui-code__tab is-on">
-                      <i className="ui-code__lang">RB</i>monitor_status_service.rb
+                      <i className="ui-code__lang">TS</i>status.ts
                     </span>
                     <span className="ui-code__tab">
-                      <i className="ui-code__lang">RB</i>api_key.rb
+                      <i className="ui-code__lang">TS</i>checks.ts
                     </span>
                     <span className="ui-spacer"></span>
                     <span className="ui-chip ui-chip--plain ui-code__chip" data-code-chip="">
-                      2 downs
+                      Bearer
                     </span>
                   </div>
                   <pre className="ui-code__pre">
                     <code>
                       <span className="ui-code__ln" data-n="1">
-                        <span className="k">class</span> <span className="f">MonitorStatusService</span>
+                        <span className="k">const</span> res = <span className="k">await</span>{" "}
+                        <span className="f">fetch</span>(<span className="s">&quot;/api/v1/status&quot;</span>, {"{"}
                       </span>
-                      <span className="ui-code__ln" data-n="2">
-                        {"  "}FAILURE_THRESHOLD = <span className="n">2</span>
+                      <span className="ui-code__ln is-mark" data-n="2">
+                        {"  "}headers: {"{"} Authorization: <span className="s">`Bearer ${"${key}"}`</span> {"}"},
                       </span>
-                      <span className="ui-code__ln is-mark" data-n="3">
-                        {"  "}
-                        <span className="k">if</span> monitor.consecutive_failures &gt;= FAILURE_THRESHOLD
+                      <span className="ui-code__ln" data-n="3" data-note="Reads live SQLite status without stale cache.">
+                        {"  "}cache: <span className="s">&quot;no-store&quot;</span>,
                       </span>
-                      <span className="ui-code__ln" data-n="4" data-note="Opens one incident per outage window.">
-                        {"    "}monitor.<span className="f">open_incident!</span>(check)
+                      <span className="ui-code__ln" data-n="4" data-note="Bounded 4 s request timeout per API call.">
+                        {"  "}signal: AbortSignal.<span className="f">timeout</span>(<span className="n">4000</span>),
                       </span>
                       <span className="ui-code__ln" data-n="5">
-                        {"  "}
-                        <span className="k">elsif</span> check.<span className="f">healthy?</span>
+                        {"}"});
                       </span>
-                      <span className="ui-code__ln" data-n="6" data-note="Resolves the open incident on recovery.">
-                        {"    "}monitor.<span className="f">resolve_incident!</span>(check)
+                      <span className="ui-code__ln" data-n="6">
+                        <span className="k">const</span> {"{ data }"} = <span className="k">await</span> res.
+                        <span className="f">json</span>();
                       </span>
                       <span className="ui-code__ln" data-n="7">
-                        {"  "}
-                        <span className="k">end</span>
+                        <span className="c">// counts: up, down, degraded, pending</span>
                       </span>
                       <span className="ui-code__ln" data-n="8">
-                        <span className="k">end</span>
+                        <span className="k">return</span> data;
                       </span>
                     </code>
                   </pre>
                   <div className="ui-code__hint" data-code-hint="">
                     <span className="ui-dot"></span>
-                    <span data-code-text="">Anti-flapping: ignores single transient timeouts.</span>
+                    <span data-code-text="">Key stays server-side; Rails stores its SHA-256 digest.</span>
                   </div>
                 </div>
               </div>
@@ -744,7 +799,8 @@ export default function HomeSections({
                   {
                     "--fit-max": "400px",
                     "--ax": "max(24px, 50% - 200px)",
-                    "--ay": "48px",
+                    "--ay": "52px",
+                    "--ay-sm": "24px",
                   } as React.CSSProperties
                 }
               >
@@ -755,42 +811,58 @@ export default function HomeSections({
                       <path d="m10.5 10.5 3 3" />
                     </svg>
                     <span className="ui-search__q">
-                      <span data-search-q="">staging</span>
+                      <span data-search-q="">{searchList[0]?.name ?? "staging"}</span>
                       <i className="ui-search__caret"></i>
                     </span>
                     <kbd className="ui-search__kbd">/</kbd>
                   </div>
                   <div className="ui-search__group">Monitors</div>
                   <ul className="ui-search__list" data-search-list="">
-                    <li className="ui-search__row is-sel">
-                      <span className="ui-search__ico">
-                        <svg className="ui-icon" viewBox="0 0 16 16">
-                          <circle cx="8" cy="8" r="4.5" />
-                        </svg>
-                      </span>
-                      <span className="ui-search__t">
-                        <b>staging</b>: billing
-                      </span>
-                      <span className="ui-search__m">Down</span>
-                    </li>
-                    <li className="ui-search__row">
-                      <span className="ui-search__ico">
-                        <svg className="ui-icon" viewBox="0 0 16 16">
-                          <circle cx="8" cy="8" r="4.5" />
-                        </svg>
-                      </span>
-                      <span className="ui-search__t">api.github.com</span>
-                      <span className="ui-search__m">Up</span>
-                    </li>
-                    <li className="ui-search__row">
-                      <span className="ui-search__ico">
-                        <svg className="ui-icon" viewBox="0 0 16 16">
-                          <circle cx="8" cy="8" r="4.5" />
-                        </svg>
-                      </span>
-                      <span className="ui-search__t">internal: app /up</span>
-                      <span className="ui-search__m">Up</span>
-                    </li>
+                    {searchList.length > 0 ? (
+                      searchList.map((m, idx) => (
+                        <li key={m.id} className={`ui-search__row${idx === 0 ? " is-sel" : ""}`}>
+                          <span className="ui-search__ico">
+                            <svg className="ui-icon" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="4.5" />
+                            </svg>
+                          </span>
+                          <span className="ui-search__t">{idx === 0 ? <b>{m.name}</b> : m.name}</span>
+                          <span className="ui-search__m">{STATUS_LABEL[m.last_status]}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <>
+                        <li className="ui-search__row is-sel">
+                          <span className="ui-search__ico">
+                            <svg className="ui-icon" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="4.5" />
+                            </svg>
+                          </span>
+                          <span className="ui-search__t">
+                            <b>staging</b>: billing
+                          </span>
+                          <span className="ui-search__m">Down</span>
+                        </li>
+                        <li className="ui-search__row">
+                          <span className="ui-search__ico">
+                            <svg className="ui-icon" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="4.5" />
+                            </svg>
+                          </span>
+                          <span className="ui-search__t">api.github.com</span>
+                          <span className="ui-search__m">Up</span>
+                        </li>
+                        <li className="ui-search__row">
+                          <span className="ui-search__ico">
+                            <svg className="ui-icon" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="4.5" />
+                            </svg>
+                          </span>
+                          <span className="ui-search__t">internal: app /up</span>
+                          <span className="ui-search__m">Up</span>
+                        </li>
+                      </>
+                    )}
                   </ul>
                   <div className="ui-search__foot">
                     <span>
@@ -808,7 +880,7 @@ export default function HomeSections({
         </div>
       </section>
 
-      {/* Screen 6: liquid-type statement moment (Beat 3) */}
+      {/* liquid-type statement moment */}
       <section className="section statement" id="statement" data-moment="liquid-type" aria-labelledby="statement-h">
         <div className="wrap">
           <div className="split-col">
@@ -820,7 +892,7 @@ export default function HomeSections({
                 A failed check never counts as healthy. The monitor holds its status on the first miss, opens an
                 incident on the second, and resolves it on recovery.
               </p>
-              <div className="span-4 start-9">
+              <div className="btn-row span-6 start-7">
                 <a className="btn btn--secondary" href="#checks">
                   Inspect check rules
                 </a>
@@ -830,12 +902,12 @@ export default function HomeSections({
         </div>
       </section>
 
-      {/* Screen 7: split-text-left with BeaconDock stack fanin diagram (calm back third) */}
+      {/* split-text-left with horizontal BeaconDock stack fanin diagram */}
       <section className="section" id="stack" aria-labelledby="stack-h">
-        <div className="wrap grid grid--top fill">
+        <div className="wrap grid grid--top">
           <div className="span-5">
             <div className="section-head">
-              <h2 id="stack-h">Built on Rails, SQLite, and Next.js</h2>
+              <h2 id="stack-h">Monitoring API on Rails, SQLite, and Next.js</h2>
               <p>
                 Solid Queue schedules every check in SQLite while this console reads <code>/api/v1</code> server-side,
                 keeping Bearer tokens out of browser storage.
@@ -843,29 +915,29 @@ export default function HomeSections({
             </div>
             <ul className="card__points">
               <li>
+                <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                  <rect x="2.5" y="3.5" width="13" height="4.5" rx="1" />
+                  <rect x="2.5" y="10" width="13" height="4.5" rx="1" />
+                </svg>
                 <span>
-                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                    <rect x="2.5" y="3.5" width="13" height="4.5" rx="1" />
-                    <rect x="2.5" y="10" width="13" height="4.5" rx="1" />
-                  </svg>
                   <b>Rails 8.1 API + Ruby 4.0</b> — SiteMonitor, Check, Incident, and SHA-256 ApiKey
                 </span>
               </li>
               <li>
+                <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                  <ellipse cx="9" cy="5" rx="6" ry="2.2" />
+                  <path d="M3 5v8c0 1.2 2.7 2.2 6 2.2s6-1 6-2.2V5" />
+                </svg>
                 <span>
-                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                    <ellipse cx="9" cy="5" rx="6" ry="2.2" />
-                    <path d="M3 5v8c0 1.2 2.7 2.2 6 2.2s6-1 6-2.2V5" />
-                  </svg>
                   <b>SQLite everywhere</b> — primary tables, Solid Queue jobs, and Solid Cache
                 </span>
               </li>
               <li>
+                <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                  <circle cx="9" cy="9" r="6.5" />
+                  <path d="M9 5.5v3.5l2.5 1.5" />
+                </svg>
                 <span>
-                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                    <circle cx="9" cy="9" r="6.5" />
-                    <path d="M9 5.5v3.5l2.5 1.5" />
-                  </svg>
                   <b>Optional MongoDB store</b> — console refresh pacing and browser alert rules
                 </span>
               </li>
@@ -876,18 +948,18 @@ export default function HomeSections({
               </a>
             </p>
           </div>
-          <div className="frame frame--split frame--fill span-6 start-7">
+          <div className="frame frame--split span-6 start-7">
             <div className="dg" data-diagram={JSON.stringify(PIPELINE_DIAGRAM)} data-icon-base="/assets/icons/"></div>
           </div>
         </div>
       </section>
 
-      {/* Screen 8: FAQ (calm back third before close) */}
+      {/* FAQ */}
       <section className="section" id="faq" aria-labelledby="faq-h">
         <div className="wrap grid grid--top">
           <div className="span-5">
             <div className="section-head">
-              <h2 id="faq-h">Questions on BeaconDock</h2>
+              <h2 id="faq-h">Questions on BeaconDock monitoring</h2>
               <p className="muted">
                 How probes run, where the API key stays, and how the console behaves when MongoDB is offline.
               </p>
@@ -906,7 +978,7 @@ export default function HomeSections({
                   Where does the API key live?
                 </h3>
                 <p>
-                  In <code>web/.env.local</code> on the server. Next.js attaches the Bearer token to{" "}
+                  In <code>.env.local</code> on the server. Next.js attaches the Bearer token to{" "}
                   <code>/api/v1</code> requests, and Rails stores only its SHA-256 digest.
                 </p>
               </div>
@@ -943,9 +1015,12 @@ export default function HomeSections({
               <div className="faq__item">
                 <h3>
                   <img src="/assets/icons/ui-server.svg" alt="" width="18" height="18" />
-                  Does the API hide full monitor URLs?
+                  Does the API show full monitor URLs?
                 </h3>
-                <p>No. Target URLs may hold secret tokens, so the console renders only the parsed host name.</p>
+                <p>
+                  No. Target URLs may hold secret tokens, so the fleet ledger and monitor header show only the parsed
+                  host name; full URLs appear only in the edit form.
+                </p>
               </div>
             </div>
           </div>

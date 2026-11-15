@@ -18,9 +18,9 @@ export default async function Settings() {
     <section className="section section--hero" aria-labelledby="set-h">
       <div className="wrap">
         <div className="grid">
-          <div className="span-4">
+          <div className="span-5 stack-4">
             <span className="t-label muted">Console</span>
-            <h1 id="set-h">Console settings</h1>
+            <h1 id="set-h">Console monitoring settings</h1>
             <p className="t-lead">
               Web-layer settings live in MongoDB for refresh pacing and browser alert banners. Monitors and checks stay
               in the Rails API.
@@ -40,7 +40,7 @@ export default async function Settings() {
               </div>
             </dl>
           </div>
-          <div className="span-7 start-6" style={{ display: "grid", gap: "var(--s-5)", alignContent: "start" }}>
+          <div className="span-6 start-7" style={{ display: "grid", gap: "var(--s-5)", alignContent: "start" }}>
             <PrefsPanel initial={{ refreshSeconds: prefs.refreshSeconds }} mongoOk={ok} />
             <RulesPanel initial={rules} monitors={monitors.map((m) => ({ id: m.id, name: m.name }))} mongoOk={ok} />
           </div>

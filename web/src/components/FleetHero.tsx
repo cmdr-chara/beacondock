@@ -1,15 +1,8 @@
 import type { Check, Monitor, StatusSummary } from "@/lib/types";
-import { intervalLabel, latencyLabel, STATUS_LABEL, timeAgo, uptimeLabel } from "@/lib/format";
+import { latencyLabel, STATUS_LABEL } from "@/lib/format";
 
-const TONE: Record<Monitor["last_status"], string> = {
-  down: "#f08d77",
-  degraded: "#f3c98b",
-  pending: "#b8bdc4",
-  up: "#9fd3b5",
-};
-
-// hero--centred: pill, centred h1 with inline mark, lead, two buttons, then a lit
-// painterly-landscape frame holding the live BeaconDock console window.
+// hero--centred: pill, centred h1, lead, two buttons, then a lit painterly-landscape
+// frame holding the BeaconDock fleet window (.ui-win).
 export default function FleetHero({
   monitors,
   checksById,
@@ -24,31 +17,11 @@ export default function FleetHero({
     (a, b) => rank[a.last_status] - rank[b.last_status] || a.name.localeCompare(b.name),
   );
   const lead = sorted[0] ?? null;
-  const leadChecks = lead ? (checksById.get(lead.id) ?? []) : [];
-  const latest = leadChecks[0] ?? null;
 
   const pillLeft = status ? `${status.total} monitors` : "API offline";
   const pillRight = status
     ? `${status.counts.up} up · ${status.counts.down} down · ${status.open_incidents} open`
     : "Set BEACONDOCK_API_KEY";
-
-  const leadStepMsg = latest
-    ? `CheckMonitorJob -> HttpCheckService (${
-        latest.latency_ms != null ? `${Math.round(latest.latency_ms)} ms` : "timeout"
-      }${latest.http_status ? `, HTTP ${latest.http_status}` : ""})`
-    : "ScheduleChecksJob -> waiting for next sweep";
-
-  const leadOutcome = lead
-    ? lead.last_status === "down"
-      ? `${lead.name} is down (${lead.consecutive_failures} consecutive failures). ${
-          latest?.error ?? "Endpoint unreachable"
-        }.`
-      : lead.last_status === "degraded"
-        ? `${lead.name} answered slower than ${lead.warn_latency_ms} ms (${latencyLabel(latest?.latency_ms)}).`
-        : lead.last_status === "pending"
-          ? `${lead.name} is queued for its first HTTP probe.`
-          : `${lead.name} answered HTTP ${latest?.http_status ?? lead.expected_status} in ${latencyLabel(latest?.latency_ms)}.`
-    : "Connect the Rails API at port 3000 to stream live monitor checks into this window.";
 
   return (
     <section className="hero hero--centred" data-enter aria-labelledby="hero-h">
@@ -59,9 +32,7 @@ export default function FleetHero({
               <span>{pillLeft}</span>
               <span className="muted">{pillRight}</span>
             </a>
-            <h1 id="hero-h" aria-label="Uptime monitor for HTTP APIs">
-              <span className="ly-mark" aria-hidden="true"></span> Uptime monitor for HTTP APIs
-            </h1>
+            <h1 id="hero-h">Uptime monitor for HTTP APIs</h1>
             <p className="hero__lead">
               Polls HTTP endpoints every 30 s to 1 h, flags slow replies, and opens an incident after two consecutive
               failures.
@@ -85,63 +56,99 @@ export default function FleetHero({
             data-fx="painterly-landscape"
             data-fx-seed="7"
             role="img"
-            aria-label="BeaconDock console window showing the worst-first monitor queue and active check detail"
+            aria-label="BeaconDock console window showing the worst-first monitor queue"
           >
-            <div className="ly-piece d-win d-win--dark" aria-hidden="true">
-              <div className="d-win__bar">
-                <span className="d-win__dots">
+            <div
+              className="ly-piece ui ui-panel ui-win"
+              style={
+                {
+                  "--fx-bg": "#141619",
+                  "--fx-surface": "#1a1d21",
+                  "--fx-ink": "#eff0f1",
+                  "--fx-muted": "#9da3ac",
+                  "--fx-accent": "#57d98e",
+                  "--fx-accent-ink": "#111111",
+                } as React.CSSProperties
+              }
+              aria-hidden="true"
+            >
+              <div className="ui-win__bar">
+                <span className="ui-dots">
                   <i></i>
                   <i></i>
                   <i></i>
                 </span>
-                <span>
-                  <b>{lead ? lead.name : "BeaconDock"}</b> · {lead ? lead.host : "api/v1"}
+                <span className="ui-win__crumb">
+                  BeaconDock <i>/</i> <b>{lead ? lead.name : "Fleet"}</b>
                 </span>
-                <span className="sp"></span>
-                <span>{lead ? `${lead.http_method} · every ${intervalLabel(lead.interval_seconds)}` : "GET · 60 s"}</span>
+                <span className="ui-spacer"></span>
+                <span className="ui-win__search">
+                  <svg className="ui-icon" viewBox="0 0 16 16">
+                    <circle cx="7" cy="7" r="4.5" />
+                    <path d="m10.5 10.5 3 3" />
+                  </svg>
+                  <span className="ui-win__ph">Filter fleet</span>
+                  <span className="ui-kbd">/</span>
+                </span>
               </div>
-              <div className="d-win__body">
-                <div className="d-win__inbox">
-                  <div className="d-win__q">Filter fleet</div>
-                  {sorted.slice(0, 4).map((m, idx) => (
-                    <div key={m.id} className={`d-win__row${idx === 0 ? " is-on" : ""}`}>
-                      <i style={{ background: TONE[m.last_status] }}>{m.name.slice(0, 2).toUpperCase()}</i>
-                      <b>{m.name}</b>
-                      <time>{STATUS_LABEL[m.last_status]}</time>
-                      <span>{m.host}</span>
-                    </div>
-                  ))}
-                  {sorted.length === 0 ? (
-                    <div className="d-win__row is-on">
-                      <i style={{ background: "#b8bdc4" }}>BD</i>
-                      <b>No monitors</b>
-                      <time>—</time>
-                      <span>localhost:3000</span>
-                    </div>
-                  ) : null}
-                </div>
-                <div className="d-win__convo">
-                  <div className="d-chat" data-ly-steps="900">
-                    <div className="d-msg d-msg--me">
-                      {lead
-                        ? `${lead.http_method} ${lead.host} · expect HTTP ${lead.expected_status}`
-                        : "GET /api/v1/status · Bearer SHA-256"}
-                    </div>
-                    <div className="d-tool" data-step="">
-                      {leadStepMsg}
-                    </div>
-                    <div className="d-msg d-msg--bot" data-step="">
-                      {leadOutcome}
-                      <small>
-                        {lead?.uptime_30d != null ? `${uptimeLabel(lead.uptime_30d)} 30d` : "30d rollup"} ·{" "}
-                        {lead ? timeAgo(lead.last_checked_at) : "live"}
-                      </small>
-                    </div>
-                    <div className="d-acts" data-step="">
-                      <span>Open monitor</span>
-                      <span>Edit threshold</span>
-                    </div>
+              <div className="ui-win__body">
+                <nav className="ui-win__side">
+                  <span className="ui-win__nav is-on">
+                    All<em>{status?.total ?? monitors.length}</em>
+                  </span>
+                  <span className="ui-win__nav">
+                    Down<em>{status?.counts.down ?? 0}</em>
+                  </span>
+                  <span className="ui-win__nav">
+                    Degraded<em>{status?.counts.degraded ?? 0}</em>
+                  </span>
+                  <span className="ui-win__nav">
+                    Pending<em>{status?.counts.pending ?? 0}</em>
+                  </span>
+                  <span className="ui-win__nav">
+                    Up<em>{status?.counts.up ?? 0}</em>
+                  </span>
+                </nav>
+                <div className="ui-win__main">
+                  <div className="ui-win__cols fleet__cols">
+                    <span>Monitor</span>
+                    <span>Status</span>
+                    <span>Latency</span>
                   </div>
+                  <ul className="ui-win__rows">
+                    {sorted.slice(0, 5).map((m) => {
+                      const latestCheck = (checksById.get(m.id) ?? []).find((c) => c.latency_ms != null);
+                      return (
+                        <li key={m.id} className="ui-win__row">
+                          <div className="ui-win__hit">
+                            <span className="ui-avatar" data-tone={String((m.id % 5) + 1)}>
+                              {m.name.slice(0, 2).toUpperCase()}
+                            </span>
+                            <span className="ui-win__who">{m.name}</span>
+                            <span className="ui-win__sub">
+                              {m.host}
+                              {!m.active ? " · paused" : ""}
+                            </span>
+                            <span className={`ui-win__st st-${m.last_status}`}>{STATUS_LABEL[m.last_status]}</span>
+                            <span className="ui-win__age">{latencyLabel(latestCheck?.latency_ms)}</span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                    {sorted.length === 0 ? (
+                      <li className="ui-win__row">
+                        <div className="ui-win__hit">
+                          <span className="ui-avatar" data-tone="4">
+                            BD
+                          </span>
+                          <span className="ui-win__who">Connect Rails API</span>
+                          <span className="ui-win__sub">localhost:3000/api/v1</span>
+                          <span className="ui-win__st st-pending">Pending</span>
+                          <span className="ui-win__age">—</span>
+                        </div>
+                      </li>
+                    ) : null}
+                  </ul>
                 </div>
               </div>
             </div>

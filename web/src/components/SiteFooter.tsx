@@ -77,7 +77,6 @@ export default function SiteFooter() {
           </div>
           <div className="footer__legal">
             <span>&copy; 2026 BeaconDock</span>
-            <div className="socials"></div>
             <span className="credits-line">Product names and logos are trademarks of their owners.</span>
           </div>
         </div>

@@ -34,6 +34,10 @@ export default function FleetFrame({
   const prevStatus = useRef<Map<number, MonitorStatus>>(new Map(initial.monitors.map((m) => [m.id, m.last_status])));
   const seq = useRef(0);
 
+  useEffect(() => {
+    setFleet(initial);
+  }, [initial]);
+
   const poll = useCallback(async () => {
     try {
       const res = await fetch("/api/console/fleet", { cache: "no-store" });
@@ -96,9 +100,10 @@ export default function FleetFrame({
       {banner.map((b) => (
         <div key={b.id} className={`alert-banner st-${b.tone}`} role="status">
           <span className="st-dot" style={{ background: "currentColor" }} aria-hidden="true" />
-          {b.text}
+          <span>{b.text}</span>
           <button
             type="button"
+            className="btn btn--secondary btn--sm"
             aria-label="Dismiss"
             onClick={() => setBanner((x) => x.filter((r) => r.id !== b.id))}
           >
@@ -111,11 +116,11 @@ export default function FleetFrame({
           <h3>The API did not answer</h3>
           <p>
             The console reads the BeaconDock REST API. Set <code>BEACONDOCK_API_URL</code> and{" "}
-            <code>BEACONDOCK_API_KEY</code> in <code>web/.env.local</code>, then restart the console.
+            <code>BEACONDOCK_API_KEY</code> in <code>.env.local</code>, then restart the console.
           </p>
         </div>
       ) : (
-        <div className="ui app fleet fill frame">
+        <div className="ui app fleet">
           <div className="app__pane app__pane--list">
             <div className="ui-panel ui-win" data-ui="window">
               <div className="ui-win__bar">
@@ -188,7 +193,7 @@ export default function FleetFrame({
                             className={`ui-win__hit${selected?.monitor.id === m.id ? " is-open" : ""}`}
                           >
                             <span className="ui-avatar" data-tone={String((m.id % 5) + 1)}>
-                              {m.name.slice(0, 2)}
+                              {m.name.slice(0, 2).toUpperCase()}
                             </span>
                             <span className="ui-win__who">{m.name}</span>
                             <span className="ui-win__sub">
@@ -256,9 +261,9 @@ export default function FleetFrame({
                       </span>
                       <span className="ui-win__sub">
                         {c.error ?? (c.http_status ? `HTTP ${c.http_status}` : "no reply")}
+                        {c.latency_ms != null ? ` · ${latencyLabel(c.latency_ms)}` : ""}
                       </span>
                       <span className={`ui-win__st st-${c.status}`}>{STATUS_LABEL[c.status]}</span>
-                      <span className="ui-win__age">{latencyLabel(c.latency_ms)}</span>
                     </li>
                   ))}
                 </ul>

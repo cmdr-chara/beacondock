@@ -7,9 +7,6 @@ import type { Check, Monitor } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-// Screen 1: centred hero with painterly-landscape window.
-// Screen 2: live app-frame fleet ledger.
-// Screens 3-8: check cycle (iris-opens), workflow tabs, liquid-type statement, stack diagram, FAQ.
 export default async function Home({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
   const [statusRes, monitorsRes, { prefs }, { rules }] = await Promise.all([
     getStatus(),
@@ -41,7 +38,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
     null;
   let selected: { monitor: Monitor; checks: Check[] } | null = null;
   if (selectedMonitor) {
-    const r = await listChecks(String(selectedMonitor.id), 1, 12);
+    const r = await listChecks(String(selectedMonitor.id), 1, 40);
     selected = { monitor: selectedMonitor, checks: r.ok ? r.data.data : [] };
   }
 
@@ -56,7 +53,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
             </div>
             <div className="span-6 start-7">
               <p className="t-lead muted">
-                Monitors sort worst first beside their 24 h latency and check log. Refreshes every{" "}
+                Live fleet ledger ordered by severity beside 24 h latency and check log. Refreshes every{" "}
                 {prefs.refreshSeconds || "—"} s.
               </p>
               <p style={{ marginTop: "var(--s-3)" }}>

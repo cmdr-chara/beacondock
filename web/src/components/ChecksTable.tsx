@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { ChecksPage } from "@/lib/types";
 import { httpStatusLabel, latencyLabel, STATUS_LABEL } from "@/lib/format";
 
@@ -9,17 +9,15 @@ export default function ChecksTable({ monitorId, initial }: { monitorId: number;
   const [page, setPage] = useState(initial.meta.page);
   const [data, setData] = useState(initial);
 
-  const load = useCallback(async (p: number) => {
-    const res = await fetch(`/api/console/monitors/${monitorId}/checks?page=${p}`, { cache: "no-store" });
-    if (!res.ok) return;
-    setData(await res.json());
-    setPage(p);
-  }, [monitorId]);
-
-  useEffect(() => {
-    if (page !== initial.meta.page) load(page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  const load = useCallback(
+    async (p: number) => {
+      const res = await fetch(`/api/console/monitors/${monitorId}/checks?page=${p}`, { cache: "no-store" });
+      if (!res.ok) return;
+      setData(await res.json());
+      setPage(p);
+    },
+    [monitorId],
+  );
 
   return (
     <>
@@ -42,16 +40,26 @@ export default function ChecksTable({ monitorId, initial }: { monitorId: number;
           <tbody>
             {data.data.map((c) => (
               <tr key={c.id}>
-                <td><span className="m-num">{new Date(c.checked_at).toLocaleString("en-GB", { hour12: false, timeZone: "UTC" })}</span></td>
+                <td>
+                  <span className="m-num">
+                    {new Date(c.checked_at).toLocaleString("en-GB", { hour12: false, timeZone: "UTC" })}
+                  </span>
+                </td>
                 <td>
                   <span className={`st-pill st-${c.status}`}>
                     <span className="st-dot" style={{ background: "currentColor" }} />
                     {STATUS_LABEL[c.status]}
                   </span>
                 </td>
-                <td className="m-hide-sm"><span className="m-num">{httpStatusLabel(c.http_status)}</span></td>
-                <td><span className="m-num">{latencyLabel(c.latency_ms)}</span></td>
-                <td className="m-hide-md"><span className="t-small muted">{c.error ?? "—"}</span></td>
+                <td className="m-hide-sm">
+                  <span className="m-num">{httpStatusLabel(c.http_status)}</span>
+                </td>
+                <td>
+                  <span className="m-num">{latencyLabel(c.latency_ms)}</span>
+                </td>
+                <td className="m-hide-md">
+                  <span className="t-small muted">{c.error ?? "—"}</span>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -59,7 +67,7 @@ export default function ChecksTable({ monitorId, initial }: { monitorId: number;
       )}
       {data.meta.total_pages > 1 ? (
         <div className="btn-row" style={{ marginTop: "var(--s-4)" }}>
-          <button className="btn btn--secondary" type="button" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+          <button className="btn btn--secondary" type="button" disabled={page <= 1} onClick={() => load(page - 1)}>
             Newer checks
           </button>
           <span className="t-small muted" style={{ alignSelf: "center" }}>
@@ -69,7 +77,7 @@ export default function ChecksTable({ monitorId, initial }: { monitorId: number;
             className="btn btn--secondary"
             type="button"
             disabled={page >= data.meta.total_pages}
-            onClick={() => setPage(page + 1)}
+            onClick={() => load(page + 1)}
           >
             Older checks
           </button>
