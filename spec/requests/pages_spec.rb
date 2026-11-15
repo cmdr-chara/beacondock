@@ -19,8 +19,8 @@ RSpec.describe "Landing page", type: :request do
     expect(response).to redirect_to(dashboard_path)
   end
 
-  it "serves the design-kit assets" do
-    get "/taste/system.css"
+  it "serves the self-hosted mono font" do
+    get "/fonts/geist-mono-latin-400-normal.woff2"
     expect(response).to have_http_status(:ok)
   end
 end
