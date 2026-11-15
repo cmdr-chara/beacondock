@@ -19,6 +19,9 @@
 
 /* Page CSS: only what the kit lacks. */
 
+/* anchored sections clear the fixed bar */
+main > :is(.hero, .section) { scroll-margin-top: 84px; }
+
 /* hero stays full first viewport on desktop; content-driven sections size to content */
 main > :is(.hero, .section--hero) { height: 100vh; }
 @media (max-width: 639px) { main > :is(.hero, .section--hero) { height: auto; min-height: 100vh; } }

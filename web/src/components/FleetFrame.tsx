@@ -338,7 +338,13 @@ export default function FleetFrame({
                   </div>
                 </dl>
 
-                {openChecks.some((c) => c.latency_ms != null) ? (
+                {openChecks.length === 0 ? (
+                  <p className="t-small muted" style={{ borderTop: "1px solid var(--u-line)", paddingTop: "var(--s-3)" }}>
+                    {openMonitor.active
+                      ? "No checks yet — the first probe runs on the next scheduled sweep."
+                      : "Paused — no checks run until the monitor resumes."}
+                  </p>
+                ) : openChecks.some((c) => c.latency_ms != null) ? (
                   <Sparkline checks={openChecks} warnMs={openMonitor.warn_latency_ms} />
                 ) : (
                   <div className="fleet__strip">

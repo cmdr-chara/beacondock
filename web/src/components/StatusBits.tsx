@@ -33,20 +33,30 @@ export function UptimeStrip({ checks }: { checks: Check[] }) {
 }
 
 // A small latency sparkline drawn from real checks (no smoothing, dots on failures).
+// Scales to the data's own min..max band so a flat-but-healthy series still fills
+// the box; a warn threshold far above the data would squash the line to the floor.
 export function Sparkline({ checks, warnMs }: { checks: Check[]; warnMs?: number }) {
   const pts = checks.slice(0, 60).reverse();
+  if (pts.length === 0) return null;
   const vals = pts.map((c) => c.latency_ms ?? 0);
-  const max = Math.max(warnMs ?? 0, ...vals, 1);
+  let lo = Math.min(...vals);
+  let hi = Math.max(...vals, 1);
+  if (hi - lo < 4) {
+    const pad = Math.max(2, hi * 0.1);
+    lo = Math.max(0, lo - pad);
+    hi += pad;
+  }
+  const span = hi - lo;
   const W = 560;
   const H = 90;
   const step = pts.length > 1 ? W / (pts.length - 1) : 0;
-  const y = (v: number) => H - 6 - (v / max) * (H - 14);
+  const y = (v: number) => H - 8 - ((v - lo) / span) * (H - 18);
   const d = pts
-    .map((c, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${y(c.latency_ms ?? max).toFixed(1)}`)
+    .map((c, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${y(c.latency_ms ?? lo).toFixed(1)}`)
     .join(" ");
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Latency, latest ${latencyLabel(vals[vals.length - 1])}`}>
-      {warnMs ? (
+      {warnMs && warnMs <= hi * 1.05 ? (
         <line
           x1="0"
           x2={W}
@@ -60,7 +70,9 @@ export function Sparkline({ checks, warnMs }: { checks: Check[]; warnMs?: number
       ) : null}
       <path d={d} fill="none" stroke="var(--p-accent)" strokeWidth="1.6" />
       {pts.map((c, i) =>
-        c.status === "down" ? <circle key={c.id} cx={i * step} cy={y(0) + 4} r="2.4" fill="#c92a09" /> : null,
+        c.status === "down" ? (
+          <circle key={c.id} cx={i * step} cy={Math.min(y(0) + 4, H - 4)} r="2.4" fill="#c92a09" />
+        ) : null,
       )}
     </svg>
   );
