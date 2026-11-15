@@ -253,6 +253,8 @@ en:
       status_d: "one unguessable public link per workspace. only the monitors you mark public are listed."
       api_t: "API"
       api_d: "create monitors and read checks over REST. keys are shown once and stored as digests."
+      tui_t: "TUI"
+      tui_d: "the dashboard above is real — `ruby bin/beacondock` runs the same live monitor table in your terminal."
     status_pane:
       operational: "all systems operational"
       week: "1 incident this week — resolved in 2m 46s"

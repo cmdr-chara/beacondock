@@ -28,6 +28,11 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+# Terminal UI (bin/beacondock — live monitoring dashboard in the shell)
+gem "pastel", "~> 0.8"
+gem "tty-screen", "~> 0.8"
+gem "tty-reader", "~> 0.9"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 

@@ -71,6 +71,31 @@ On Windows the worker runs in `--mode async` automatically (no `fork(2)`).
 **Demo credentials** (dev only): `demo@beacondock.dev` / `beacondock-demo`.
 The seed prints the public status page URL and a demo API key.
 
+### Terminal UI
+
+`bin/beacondock` opens the live monitoring dashboard in your shell — the same
+data the web app renders, refreshed every 5 s. `q` quits, `r` refreshes,
+`--once` prints a single frame (handy for pipes and screenshots).
+
+```bash
+ruby bin/beacondock
+```
+
+```
+beacondock — 5 monitors · all operational · 12:10:51
+
+monitor              method every  status      latency  uptime 30d
+Example.com          GET    300 s  ● up        157 ms   ▇▇▇▇▇▇▇x▇▇ 96.72%
+GitHub               GET    60 s   ● up        254 ms   ▇▇▇▇▇▇▇x▇▇ 94.51%
+...
+! 21:33 Example.com — Check failed
+✓ 21:35 Example.com — resolved after 2m 41s
+```
+
+The uptime bar is the worst check status per day (up `▇`, degraded `▁`, down
+`x`, no data `·`) — identical to the web status page. Built on `pastel`,
+`tty-screen` and `tty-reader`; renderer lives in `lib/tui/dashboard.rb`.
+
 ### REST API
 
 Auth: `Authorization: Bearer <api-key>` — create keys on the **API keys** page
@@ -97,7 +122,7 @@ curl -X POST http://localhost:3000/api/v1/monitors \
 ### Testing & quality
 
 ```bash
-bundle exec rspec     # 129 examples: models, services (WebMock), jobs, requests, helpers
+bundle exec rspec     # 144 examples: models, services (WebMock), jobs, requests, TUI
 bin/rubocop           # rubocop-rails-omakase — clean
 bin/brakeman          # 0 warnings
 bin/ci                # setup + rubocop + bundler-audit + brakeman + rspec
@@ -159,6 +184,20 @@ bin/dev              # web (porta 3000) + worker Solid Queue
 
 **Credenziali demo** (solo sviluppo): `demo@beacondock.dev` / `beacondock-demo`.
 
+### Interfaccia a terminale (TUI)
+
+`bin/beacondock` apre la dashboard di monitoraggio live nella shell — gli
+stessi dati della web app, aggiornati ogni 5 s. `q` esce, `r` aggiorna,
+`--once` stampa un solo frame (utile per pipe e screenshot).
+
+```bash
+ruby bin/beacondock
+```
+
+La barra uptime è il peggior stato del giorno (up `▇`, degradato `▁`, down `x`,
+nessun dato `·`) — identica alla status page web. Basata su `pastel`,
+`tty-screen` e `tty-reader`; il renderer è in `lib/tui/dashboard.rb`.
+
 ### API REST
 
 Autenticazione: `Authorization: Bearer <chiave>` — le chiavi si creano nella
@@ -172,7 +211,7 @@ curl -H "Authorization: Bearer bd_xxx" http://localhost:3000/api/v1/status
 ### Test e qualità
 
 ```bash
-bundle exec rspec     # 129 esempi
+bundle exec rspec     # 144 esempi
 bin/rubocop           # pulito
 bin/brakeman          # 0 avvisi
 bin/ci
