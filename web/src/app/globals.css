@@ -67,13 +67,17 @@ main > .section:has(.mtable) { height: auto; min-height: min(72vh, 620px); }
 }
 .hero__window .ui-win__st::before { display: none; }
 
-/* fleet — unified two-pane console with shared top bar */
+/* fleet — the app window floats on a calm gradient-mesh ground, the same dealt
+   treatment every other fragment on the page gets */
 #fleet.section { height: auto; min-height: min(82vh, 700px); }
+.fleet-shell.panel { height: auto; margin-top: var(--s-6); padding: var(--s-6); overflow: hidden; }
+.fleet-shell .app.ui { margin-top: 0; }
+@media (max-width: 1023px) { .fleet-shell.panel { padding: var(--s-4); } }
+@media (max-width: 639px) { .fleet-shell.panel { padding: var(--s-3); border-radius: var(--r-md); } }
 .app.ui {
   display: grid;
   grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
   grid-template-rows: auto minmax(0, 1fr);
-  margin-top: var(--s-6);
   background: var(--u-bg);
   border: 1px solid var(--u-border);
   border-radius: var(--u-r);

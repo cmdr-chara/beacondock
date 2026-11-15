@@ -111,7 +111,7 @@ export default function FleetHero({
                     <span>Latency</span>
                   </div>
                   <ul className="ui-win__rows">
-                    {sorted.slice(0, 5).map((m) => {
+                    {sorted.slice(0, 4).map((m) => {
                       const latestCheck = (checksById.get(m.id) ?? []).find((c) => c.latency_ms != null);
                       return (
                         <li key={m.id} className="ui-win__row">

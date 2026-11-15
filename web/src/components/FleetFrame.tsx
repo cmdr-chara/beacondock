@@ -189,7 +189,14 @@ export default function FleetFrame({
           </p>
         </div>
       ) : (
-        <div className="ui app fleet">
+        <div
+          className="panel fleet-shell"
+          data-fx="gradient-mesh"
+          data-fx-seed="17"
+          data-fx-palette='{"bg":"#c6d3df","surface":"#d6e0e9","ink":"#25303a","muted":"#5d6873","accent":"#3f6a92"}'
+          data-fx-params='{"speed":0,"calm":0.2,"calmX":0.5,"calmY":0.6,"tint":0.5,"relief":0.3}'
+        >
+          <div className="ui app fleet">
           <div className="ui-win__bar app__bar">
             <span className="ui-win__crumb">
               BeaconDock <i>/</i> <b>Fleet</b>
@@ -345,7 +352,16 @@ export default function FleetFrame({
                       : "Paused — no checks run until the monitor resumes."}
                   </p>
                 ) : openChecks.some((c) => c.latency_ms != null) ? (
-                  <Sparkline checks={openChecks} warnMs={openMonitor.warn_latency_ms} />
+                  <div className="fleet__strip">
+                    <div className="fleet__striphead">
+                      <span className="t-small muted">Latency</span>
+                      <span className="t-small muted mono">
+                        last {Math.min(openChecks.length, 40)} checks
+                        {openMonitor.warn_latency_ms ? ` · degrade above ${openMonitor.warn_latency_ms} ms` : ""}
+                      </span>
+                    </div>
+                    <Sparkline checks={openChecks} warnMs={openMonitor.warn_latency_ms} />
+                  </div>
                 ) : (
                   <div className="fleet__strip">
                     <div className="fleet__striphead">
@@ -411,6 +427,7 @@ export default function FleetFrame({
             )}
           </div>
         </div>
+          </div>
       )}
     </>
   );

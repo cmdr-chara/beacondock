@@ -53,8 +53,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
             </div>
             <div className="span-6 start-7">
               <p className="t-lead muted">
-                Endpoints sort by current state beside 24 h uptime, probe strip, and check history. Refreshes every{" "}
-                {prefs.refreshSeconds || "—"} s.
+                Endpoints sort by current state beside 24 h uptime, probe strip, and check history.{" "}
+                {prefs.refreshSeconds
+                  ? `Refreshes every ${prefs.refreshSeconds} s.`
+                  : "Live refresh is off — turn it on in console settings."}
               </p>
               <p style={{ marginTop: "var(--s-3)" }}>
                 <a className="link" href="/settings">

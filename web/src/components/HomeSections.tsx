@@ -1015,7 +1015,7 @@ export default function HomeSections({
               <div className="faq__item">
                 <h3>
                   <img src="/assets/icons/ui-server.svg" alt="" width="18" height="18" />
-                  Are secret URL query tokens shown on the dashboard?
+                  Does the fleet view show secret URL tokens?
                 </h3>
                 <p>
                   No. Target URLs may hold secret tokens, so the fleet view and monitor header show only the parsed
