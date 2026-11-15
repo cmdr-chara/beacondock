@@ -59,4 +59,44 @@ RSpec.describe Tui::Dashboard do
     create(:monitor, name: "a" * 40)
     expect(dashboard.frame).to include("…")
   end
+
+  it "renders a monitor detail view with status, uptime and recent checks" do
+    monitor = create(:monitor, name: "Billing", last_status: :up, expected_status: 200)
+    create(:check, monitor: monitor, status: "up", http_status: 200, latency_ms: 90.0)
+    create(:check, monitor: monitor, status: "down", http_status: 503, checked_at: 3.minutes.ago)
+
+    frame = dashboard.detail_frame(monitor)
+
+    expect(frame).to include("Billing")
+    expect(frame).to include("monitor detail")
+    expect(frame).to include("24h")
+    expect(frame).to include("30d")
+    expect(frame).to include("recent checks")
+    expect(frame).to include("90 ms")
+    expect(frame).to include("503")
+    expect(frame).to include("esc back")
+  end
+
+  it "routes frame to the detail view after open_detail" do
+    create(:monitor, name: "API")
+    create(:monitor, name: "Billing")
+
+    dashboard.frame # list render populates the selectable monitors
+    dashboard.move_selection(1)
+    dashboard.open_detail
+
+    frame = dashboard.frame
+    expect(frame).to include("Billing")
+    expect(frame).to include("monitor detail")
+  end
+
+  it "clamps selection within the monitor list" do
+    create(:monitor, name: "API")
+    create(:monitor, name: "Billing")
+
+    dashboard.frame
+    dashboard.move_selection(-5)
+    dashboard.open_detail
+    expect(dashboard.frame).to include("API")
+  end
 end

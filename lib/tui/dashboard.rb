@@ -26,6 +26,8 @@ module Tui
       @once = once
       @pastel = Pastel.new(enabled: color.nil? ? io.tty? : color)
       @tick = 0
+      @view = :list
+      @selected = 0
     end
 
     def run
@@ -37,7 +39,13 @@ module Tui
         catch(:quit) do
           loop do
             print_frame
-            break if wait(@refresh, keys) == :quit
+            case wait(@refresh, keys)
+            when :quit then break
+            when :up then move_selection(-1)
+            when :down then move_selection(1)
+            when :enter then open_detail
+            when :back then @view = :list
+            end
           end
         end
       end
@@ -45,43 +53,136 @@ module Tui
       show_cursor
     end
 
+    def print_frame
+      @tick += 1
+      hide_cursor if @io.tty?
+      @io.print "\e[H\e[J" if @io.tty?
+      @io.print frame
+      @io.flush
+    end
+
     # One whole frame as a string — pure rendering, no terminal state, so it
     # is directly testable.
+    # The current screen: monitor list, or the detail view opened with Enter.
     def frame
+      if @view == :detail
+        monitor = SiteMonitor.find_by(id: @selected_id)
+        return detail_frame(monitor) if monitor
+        @view = :list
+      end
+      list_frame
+    end
+
+    def list_frame
       monitors = SiteMonitor.order(:name).to_a
+      @monitors = monitors
       @incident_monitor_ids = Incident.where(resolved_at: nil).pluck(:monitor_id).to_set
-      [
-        header(monitors.size, @incident_monitor_ids.size),
-        rule,
-        "",
-        *table(monitors),
-        "",
-        *events,
-        rule,
-        footer
-      ].join("\n")
+      ev = events
+      lines = [
+        top_bar(monitors.size),
+        box_line(header_body(@incident_monitor_ids.size)),
+        mid_rule("monitors"),
+        *table(monitors).map { |l| box_line(l) },
+        *(ev.empty? ? [] : [ mid_rule("recent events"), *ev.map { |l| box_line(l) } ]),
+        bottom_bar
+      ]
+      lines.join("\n")
+    end
+
+    def move_selection(delta)
+      return if @monitors.nil? || @monitors.empty?
+      @selected = (@selected + delta).clamp(0, @monitors.size - 1)
+    end
+
+    def open_detail
+      return if @monitors.nil? || @monitors.empty?
+      @selected_id = @monitors[@selected].id
+      @view = :detail
+    end
+
+    # Detail view for one monitor — reached with Enter from the list.
+    def detail_frame(monitor)
+      @incident_monitor_ids = Incident.where(resolved_at: nil).pluck(:monitor_id).to_set
+      checks = monitor.checks.limit(8).to_a
+      lines = [
+        top_bar("monitor detail"),
+        box_line("#{pad(truncate(monitor.name), NAME_W)} #{@pastel.dim("#{monitor.http_method} #{monitor.host}")}"),
+        mid_rule("status"),
+        box_line(status_line(monitor)),
+        mid_rule("uptime"),
+        box_line(uptime_line(monitor)),
+        box_line(bar_for(monitor)),
+        *recent_check_lines(checks),
+        bottom_bar(back: true)
+      ]
+      lines.join("\n")
     end
 
     private
-      def print_frame
-        @tick += 1
-        hide_cursor if @io.tty?
-        @io.print "\e[H\e[J" if @io.tty?
-        @io.print frame
-        @io.flush
+      def status_line(monitor)
+        status = case monitor.last_status
+        when "up" then @pastel.green("● up")
+        when "down" then @pastel.red("✕ down")
+        when "degraded" then @pastel.yellow("◐ degraded")
+        else @pastel.dim("◌ pending")
+        end
+        last = monitor.last_checked_at ? "#{format_duration((Time.current - monitor.last_checked_at).to_i)} ago" : "never"
+        "#{status} #{@pastel.dim("·")} #{@pastel.dim("last check")} #{last} #{@pastel.dim("·")} #{@pastel.dim("expected")} #{monitor.expected_status} #{@pastel.dim("·")} #{@pastel.dim("every")} #{fmt_interval(monitor.interval_seconds)}"
       end
 
-      def header(count, open)
-        parts = [ "#{count} monitor#{"s" if count != 1}" ]
-        parts << if open.zero?
-          @pastel.green("all operational")
-        else
-          @pastel.red("#{open} incident#{"s" if open > 1} open")
+      def uptime_line(monitor)
+        [ [ "24h", monitor.uptime_percentage(24.hours) ],
+          [ "7d", monitor.uptime_percentage(7.days) ],
+          [ "30d", monitor.uptime_percentage(30.days) ]
+        ].map { |label, pct| "#{@pastel.dim(label)} #{pct.nil? ? @pastel.dim("—") : "#{pct}%"}" }.join(@pastel.dim("   "))
+      end
+
+      def recent_check_lines(checks)
+        return [] if checks.empty?
+
+        lines = [ mid_rule("recent checks") ]
+        lines + checks.map do |c|
+          glyph = case c.status
+          when "up" then @pastel.green("✓")
+          when "degraded" then @pastel.yellow("◐")
+          else @pastel.red("✕")
+          end
+          bits = [ c.http_status || "—", c.latency_ms ? "#{c.latency_ms.round} ms" : "—", c.error ].compact
+          box_line("#{glyph} #{@pastel.dim(c.checked_at.strftime("%H:%M"))} #{bits.join(@pastel.dim("  "))}")
         end
+      end
+
+      # --- the frame: one box-drawing panel with titled section separators,
+      #     k9s/lazygit style ------------------------------------------
+      def top_bar(count_or_label)
+        label = count_or_label.is_a?(Integer) ? "#{count_or_label} monitor#{"s" unless count_or_label == 1}" : count_or_label
+        title = @pastel.bold(" beacondock ")
+        sub = @pastel.dim(" #{label} ")
+        clock = @pastel.dim(" #{Time.current.strftime("%H:%M:%S")} ")
+        dashes = content_width - 2 - visible(title) - visible(sub) - visible(clock) - 1
+        "#{@pastel.dim("┌─")}#{title}#{sub}#{@pastel.dim("─" * [ dashes, 0 ].max + "─")}#{clock}#{@pastel.dim("┐")}"
+      end
+
+      def mid_rule(label)
+        text = @pastel.dim(" #{label} ")
+        "#{@pastel.dim("├")}#{text}#{@pastel.dim("─" * [ content_width - 2 - visible(text), 0 ].max)}#{@pastel.dim("┤")}"
+      end
+
+      def bottom_bar(back: false)
+        cursor = @tick.even? ? "█" : " "
+        hint = back ? "esc back · q quit" : "↑↓ select · enter detail · r refresh · q quit"
+        text = " #{@pastel.yellow(cursor)} #{@pastel.dim("#{hint} · live every #{@refresh} s")} "
+        "#{@pastel.dim("└")}#{text}#{@pastel.dim("─" * [ content_width - 2 - visible(text), 0 ].max)}#{@pastel.dim("┘")}"
+      end
+
+      def box_line(content)
+        "#{@pastel.dim("│")} #{pad_visible(content, content_width - 4)} #{@pastel.dim("│")}"
+      end
+
+      def header_body(open)
+        parts = open.zero? ? [ @pastel.green("all operational") ] : [ @pastel.red("#{open} incident#{"s" if open > 1} open") ]
         parts << @pastel.dim("next check #{next_check_in}")
-        left = "#{@pastel.bold("beacondock")} #{@pastel.dim("—")} #{parts.join(@pastel.dim(" · "))}"
-        clock = Time.current.strftime("%H:%M:%S")
-        left + " " * [ 1, content_width - visible(left) - clock.length ].max + @pastel.dim(clock)
+        parts.join(@pastel.dim(" · "))
       end
 
       def next_check_in
@@ -93,19 +194,19 @@ module Tui
         "in #{format_duration(seconds)}"
       end
 
-      def rule = @pastel.dim("─" * content_width)
-
-      def content_width = [ terminal_width, 110 ].min
+      def content_width = [ [ terminal_width, 110 ].min, 56 ].max
 
       # Fixed columns total ~61-70 chars; the uptime bar absorbs whatever is
-      # left of the terminal so it is always as long as it can be.
+      # left inside the box so it is always as long as it can be.
+      def inner_width = content_width - 4
+
       def bar_days
         fixed = NAME_W + 1 + 6 + 1 + 5 + 1 + 11 + 1 + 8 + 1 + 8 + 1
         fixed += TREND_W + 1 if trend?
-        (content_width - fixed).clamp(BAR_MIN, BAR_MAX)
+        (inner_width - fixed).clamp(BAR_MIN, BAR_MAX)
       end
 
-      def trend? = content_width >= TREND_MIN_WIDTH
+      def trend? = inner_width >= TREND_MIN_WIDTH
 
       def table(monitors)
         return [ @pastel.dim(" no monitors yet — add one in the web app") ] if monitors.empty?
@@ -118,10 +219,10 @@ module Tui
           (trend? ? pad("", TREND_W) + " " : "") +
           pad("uptime", bar_days) + " " +
           rpad("#{BAR_MAX}d", 8)
-        [ @pastel.dim(head), *monitors.map { |m| row(m) } ]
+        [ @pastel.dim(head), *monitors.map.with_index { |m, i| row(m, !@once && i == @selected) } ]
       end
 
-      def row(monitor)
+      def row(monitor, selected = false)
         status = case monitor.last_status
         when "up" then @pastel.green(pad("● up", 11))
         when "down" then @pastel.red(pad("✕ down", 11))
@@ -148,8 +249,10 @@ module Tui
             pct >= 99.9 ? @pastel.green(cell) : pct >= 99 ? @pastel.yellow(cell) : @pastel.red(cell)
           end
 
-        name_cell = pad(truncate(monitor.name), NAME_W)
-        name_cell = @pastel.red(name_cell) if @incident_monitor_ids&.include?(monitor.id)
+        name_text = selected ? "▸ #{truncate(monitor.name, NAME_W - 3)}" : truncate(monitor.name)
+        name_cell = pad(name_text, NAME_W)
+        name_cell = @pastel.inverse(name_cell) if selected
+        name_cell = @pastel.red(name_cell) if @incident_monitor_ids&.include?(monitor.id) && !selected
         "  " + name_cell + " " +
           pad(monitor.http_method, 6) + " " +
           pad(fmt_interval(monitor.interval_seconds), 5) + " " +
@@ -211,15 +314,9 @@ module Tui
           end
           e
         end
-        [ @pastel.dim(" recent events") ] +
-          entries.sort_by { |t, _, _| -t.to_i }.first(EVENTS_LIMIT).map do |t, glyph, text|
-            " #{glyph} #{@pastel.dim(t.strftime("%H:%M"))} #{text}"
-          end
-      end
-
-      def footer
-        cursor = @tick.even? ? "█" : " "
-        "#{@pastel.yellow(cursor)} #{@pastel.dim("q quit · r refresh · live every #{@refresh} s")}"
+        entries.sort_by { |t, _, _| -t.to_i }.first(EVENTS_LIMIT).map do |t, glyph, text|
+          "#{glyph} #{@pastel.dim(t.strftime("%H:%M"))} #{text}"
+        end
       end
 
       def format_duration(seconds)
@@ -243,14 +340,22 @@ module Tui
         keys
       end
 
+      KEY_ACTIONS = {
+        "q" => :quit, "\u0003" => :quit,
+        "r" => :refresh,
+        "up" => :up, :up => :up, "\e[A" => :up, "k" => :up,
+        "down" => :down, :down => :down, "\e[B" => :down, "j" => :down,
+        "enter" => :enter, :enter => :enter, "\r" => :enter, "\n" => :enter,
+        "escape" => :back, :escape => :back, "\e" => :back,
+        "backspace" => :back, :backspace => :back, "\u007F" => :back, "h" => :back
+      }.freeze
+
       def wait(seconds, keys)
         deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + seconds
         loop do
           begin
-            case keys.pop(true)
-            when "q", "" then return :quit
-            when "r" then return :refresh
-            end
+            action = KEY_ACTIONS[keys.pop(true)]
+            return action if action
           rescue ThreadError
           end
           return :tick if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
@@ -265,10 +370,13 @@ module Tui
 
       def rpad(text, width) = format("%#{width}s", text)
 
-      def truncate(text) = text.length > NAME_W - 1 ? "#{text[0, NAME_W - 2]}…" : text
+      def truncate(text, width = NAME_W) = text.length > width - 1 ? "#{text[0, width - 2]}…" : text
 
       # Visible length ignoring ANSI escapes.
       def visible(text) = text.gsub(/\e\[[0-9;]*m/, "").length
+
+      # Right-pad to a visible width — ANSI codes don't count toward length.
+      def pad_visible(text, width) = text + " " * [ width - visible(text), 0 ].max
 
       def hide_cursor = @io.print "\e[?25l"
 
